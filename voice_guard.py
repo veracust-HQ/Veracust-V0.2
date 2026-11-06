@@ -32,7 +32,18 @@ class VeracustEngine:
         try:
             with open(audio_path, 'rb') as f:
                 header = f.read(4096).lower()
-                signatures = [b'elevenlabs', b'lavf', b'coqui', b'tortoise', b'bark', b'tts', b'google']
+                signatures = [ 
+                    # Commercial Generators & APIs
+    b'elevenlabs', b'eleven', b'playht', b'resemble', b'openai', 
+    b'speechify', b'murf', b'wellsaid', b'descript',
+    
+    # Open-Source & Hacker Models (GitHub)
+    b'coqui', b'xtts', b'tortoise', b'bark', b'chattts', 
+    b'f5-tts', b'cosyvoice', b'vits', b'rvc', b'so-vits',
+    
+    # Common Python AI Audio Export Frameworks & Encoders
+    b'lavf', b'lame', b'pydub', b'torchaudio', b'soundfile', b'scipy'
+]
                 for sig in signatures:
                     if sig in header:
                         anomalies.append(f"Header Signature: Known synthetic encoder tag detected ({sig.decode()})")
