@@ -80,7 +80,7 @@ Telephony codecs (G.711, AMR-WB, Opus) and modern neural codecs heavily truncate
 ### Endpoint: `POST /v1/verify`
 ```bash
 curl -X 'POST' \
-  'https://voiceguard-core.onrender.com/v1/verify' \
+  'https://veracust-website.onrender.com/v1/verify' \
   -H 'accept: application/json' \
   -H 'Content-Type: multipart/form-data' \
   -F 'file=@telephony_sample.wav'
