@@ -8,10 +8,37 @@ from voice_guard import VeracustEngine
 app = FastAPI(
     title="VERACUST Enterprise Gateway",
     description="Deterministic Acoustic Authenticity Protocol | Engineered by Utkarsh Dixit (Founder & Lead Systems Engineer)",
-    version="3.0.0"
+    version="3.0.2"
 )
 
 guard = VeracustEngine()
+
+@app.get("/")
+def home():
+    return {"status": "online", "engine": "VoiceGuard-v1"}
+
+# 2. ADD THIS ROUTE HERE (Replace with your actual filename and text from Google)
+@app.get("/google1234abc5678.html", response_class=PlainTextResponse)
+def google_verification():
+    return "google-site-verification: google1234abc5678.html"
+
+@app.post("/v1/verify")
+async def verify_audio(file: UploadFile = File(...)):
+    temp_path = f"temp_{file.filename}"
+    with open(temp_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    result = guard.verify(temp_path)
+    
+    if os.path.exists(temp_path):
+        os.remove(temp_path)
+        
+    return result
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
 
 AUDIT_LOG_FILE = "audit_log.json"
 
