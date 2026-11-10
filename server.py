@@ -13,36 +13,6 @@ app = FastAPI(
 
 guard = VeracustEngine()
 
-@app.get("/")
-def home():
-    return {"status": "online", "engine": "VoiceGuard-v1"}
-
-# --- FIX: RETURNS RAW PLAIN TEXT SO GOOGLE CAN READ IT ---
-# Remember to change "google1234abc5678.html" to your actual Google filename!
-@app.get("/google1234abc5678.html")
-def google_verification():
-    content = "google-site-verification: google1234abc5678.html"
-    return Response(content=content, media_type="text/plain")
-# ---------------------------------------------------------
-
-@app.post("/v1/verify")
-async def verify_audio(file: UploadFile = File(...)):
-    temp_path = f"temp_{file.filename}"
-    with open(temp_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-        
-    result = guard.verify(temp_path)
-    
-    if os.path.exists(temp_path):
-        os.remove(temp_path)
-        
-    return result
-
-if __name__ == "__main__":
-    import uvicorn
-    port = int(os.environ.get("PORT", 8000))
-    uvicorn.run(app, host="0.0.0.0", port=port)
-    
 AUDIT_LOG_FILE = "audit_log.json"
 
 def log_verification(filename: str, verdict: str, confidence: float):
