@@ -19,9 +19,9 @@ def home():
 
 # --- FIX: THIS USES STANDARD FASTAPI STRINGS WITHOUT EXTRA IMPORTS ---
 # Make sure to swap out "google1234abc5678.html" with your actual Google filename!
-@app.get("/google1234abc5678.html")
+@app.get("/ google49aaccc3722ac713.html")
 def google_verification():
-    return "google-site-verification: google1234abc5678.html"
+    return "google-site-verification: google49aaccc3722ac713.html"
 # ---------------------------------------------------------------------
 
 @app.post("/v1/verify")
