@@ -1,4 +1,5 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Request
+from fastapi import FastAPI, UploadFile, File, HTTPException, Request, Depends
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 import os
 import tempfile
@@ -6,6 +7,8 @@ from pathlib import Path
 from datetime import datetime, timezone
 import httpx
 from voice_guard import VeracustEngine
+
+security_scheme = HTTPBearer(auto_error=False)
 
 app = FastAPI(
     title="VERACUST Enterprise Gateway",
@@ -142,7 +145,7 @@ def home():
 
 
 @app.get("/v1/stats", summary="View Your Veracust Evaluation Activity")
-async def get_stats(request: Request):
+async def get_stats(request: Request, credentials: HTTPAuthorizationCredentials = Depends(security_scheme)):
     user = await current_user(request)
     await require_policy_acceptance(user)
     headers = _supabase_headers(user["token"])
@@ -176,7 +179,7 @@ async def get_stats(request: Request):
 
 
 @app.post("/v1/verify", summary="Verify Audio Stream Authenticity")
-async def verify_audio(request: Request, file: UploadFile = File(...)):
+async def verify_audio(request: Request, file: UploadFile = File(...), credentials: HTTPAuthorizationCredentials = Depends(security_scheme)):
     user = await current_user(request)
     await require_policy_acceptance(user)
 
