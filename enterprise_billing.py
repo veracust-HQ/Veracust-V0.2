@@ -6,13 +6,16 @@ hash of that token is stored in Supabase.
 """
 import hashlib
 import os
+import secrets
+import hmac
 from datetime import datetime, timezone
 from uuid import UUID
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
+from uuid import UUID
 
 router = APIRouter()
 bearer = HTTPBearer(auto_error=False)
@@ -84,6 +87,12 @@ async def _rpc(url: str, headers: dict, function_name: str, payload: dict):
     return response.json()
 
 
+class CreateDeployment(BaseModel):
+    account_id: UUID
+    subscription_id: UUID
+    deployment_name: str = Field(min_length=2, max_length=120)
+
+
 class AuthorizeInspection(BaseModel):
     idempotency_key: str = Field(min_length=8, max_length=128, pattern=r"^[A-Za-z0-9._:-]+$")
 
@@ -91,6 +100,68 @@ class AuthorizeInspection(BaseModel):
 class FinalizeInspection(BaseModel):
     reservation_id: UUID
     success: bool
+
+
+
+@router.post("/v1/admin/deployments", summary="Provision a customer deployment credential")
+async def create_deployment(
+    body: CreateDeployment,
+    x_veracust_admin_key: str | None = Header(default=None),
+):
+    configured_admin_key = os.environ.get("VERACUST_ADMIN_API_KEY", "")
+    if not configured_admin_key or not x_veracust_admin_key or not hmac.compare_digest(
+        configured_admin_key, x_veracust_admin_key
+    ):
+        raise HTTPException(status_code=401, detail="Administrator authorization is required.")
+
+    url, headers = _admin_headers()
+    try:
+        async with httpx.AsyncClient(timeout=10) as client:
+            subscription_response = await client.get(
+                f"{url}/rest/v1/enterprise_subscriptions",
+                headers=headers,
+                params={
+                    "select": "id,account_id,status",
+                    "id": f"eq.{str(body.subscription_id)}",
+                    "account_id": f"eq.{str(body.account_id)}",
+                    "status": "eq.active",
+                    "limit": "1",
+                },
+            )
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=503, detail="Could not validate the customer subscription.") from exc
+    if subscription_response.status_code != 200 or not subscription_response.json():
+        raise HTTPException(status_code=404, detail="No active subscription matches this customer account.")
+
+    raw_token = secrets.token_urlsafe(40)
+    token_hash = hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
+    try:
+        async with httpx.AsyncClient(timeout=12) as client:
+            response = await client.post(
+                f"{url}/rest/v1/enterprise_deployments",
+                headers={**headers, "Prefer": "return=representation"},
+                json={
+                    "account_id": str(body.account_id),
+                    "subscription_id": str(body.subscription_id),
+                    "deployment_name": body.deployment_name,
+                    "credential_hash": token_hash,
+                    "status": "active",
+                },
+            )
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=503, detail="Could not create deployment credential.") from exc
+    if response.status_code not in (200, 201):
+        raise HTTPException(status_code=503, detail="Could not create deployment credential.")
+    rows = response.json()
+    if not rows:
+        raise HTTPException(status_code=503, detail="Deployment credential was not created.")
+    return {
+        "deployment_id": rows[0]["id"],
+        "deployment_name": body.deployment_name,
+        "deployment_token": raw_token,
+        "status": "active",
+        "warning": "Copy this token now. It cannot be retrieved again.",
+    }
 
 
 @router.post("/v1/control/authorize", summary="Authorize one private deployment inspection")
