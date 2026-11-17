@@ -31,7 +31,7 @@ app.add_middleware(
     allow_origins=ALLOWED_ORIGINS + ["http://localhost:3000", "http://127.0.0.1:5500"],
     allow_credentials=False,
     allow_methods=["GET", "POST", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "apikey"],
+    allow_headers=["Authorization", "Content-Type", "apikey", "Idempotency-Key"],
 )
 
 app.include_router(enterprise_billing_router)
