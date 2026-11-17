@@ -2,44 +2,164 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#080d17"><title>Veracust | Audio Authenticity</title>
+<meta name="theme-color" content="#080d17"><title>Veracust | Secure Evaluation</title>
 <style>
-:root{color-scheme:dark;--bg:#080d17;--panel:#101a2a;--panel2:#0c1422;--line:#1d2c40;--muted:#8fa2b9;--text:#edf5ff;--cyan:#48d9ed;--green:#4adea4;--red:#ff687d;--amber:#f6c66a}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% -15%,#123044 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
-.wrap{max-width:1160px;margin:auto;padding:28px 22px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:34px}.brand{display:flex;align-items:center;gap:12px;font-weight:750;letter-spacing:.14em}.mark{width:38px;height:38px;border:1px solid #2b8798;border-radius:11px;display:grid;place-items:center;color:var(--cyan);font-size:21px;background:#102a39}.status{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px #4adea488}.hero{margin-bottom:25px}.eyebrow{color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase}.hero h1{font-size:clamp(28px,5vw,42px);line-height:1.1;margin:8px 0 10px;letter-spacing:-.04em}.hero p{color:var(--muted);max-width:680px;margin:0}.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:18px}.panel{background:linear-gradient(145deg,#111d2e,#0d1625);border:1px solid var(--line);border-radius:17px;padding:22px;box-shadow:0 14px 45px #0002}.panel h2{font-size:16px;margin:0 0 4px}.sub{color:var(--muted);font-size:13px;margin:0 0 18px}.drop{border:1px dashed #38536a;border-radius:13px;background:#0a1421;padding:27px 18px;text-align:center;transition:.2s}.drop.over{border-color:var(--cyan);background:#0d2532}.upload-icon{font-size:27px;color:var(--cyan)}.drop strong{display:block;margin:8px 0 3px}.drop small{color:var(--muted)}input[type=file]{display:none}.fileline{margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--muted);font-size:13px}.btn{border:0;border-radius:9px;padding:11px 17px;background:var(--cyan);color:#06131b;font-weight:750;cursor:pointer}.btn:disabled{opacity:.45;cursor:not-allowed}.btn.secondary{background:#17283a;color:var(--text);border:1px solid #2b4058}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.notice{font-size:12px;color:#9babc0;margin-top:16px;padding:11px 13px;background:#0b1522;border-radius:9px;border:1px solid #1a2a3c}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.stat{background:#0b1522;border:1px solid var(--line);border-radius:11px;padding:13px}.stat b{display:block;font-size:23px;letter-spacing:-.04em}.stat span{font-size:11px;color:var(--muted)}.result{margin-top:18px;display:none}.verdict{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:12px;background:#0a1421;border:1px solid var(--line)}.verdict h3{font-size:17px;margin:0}.pill{font-size:11px;font-weight:800;letter-spacing:.06em;padding:6px 9px;border-radius:99px;background:#233144;color:var(--text)}.pill.synthetic{background:#481d2b;color:#ff9aaa}.pill.human{background:#123b34;color:#80f0c5}.pill.inconclusive{background:#49381b;color:#ffdc91}.confidence{font-size:27px;font-weight:750;color:var(--cyan)}.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:12px}.metric{background:#0b1522;border:1px solid var(--line);padding:11px;border-radius:10px;min-width:0}.metric span{display:block;color:var(--muted);font-size:11px}.metric b{font-size:14px;overflow-wrap:anywhere}.evidence{margin-top:13px}.evidence ul{margin:8px 0 0;padding-left:18px;color:#c4d2e2;font-size:13px}.evidence li{margin:6px 0}.actiontext{margin-top:12px;font-size:13px;color:var(--muted)}.error{color:#ff9aaa}.history{margin-top:18px}.history table{width:100%;border-collapse:collapse;font-size:12px}.history th,.history td{text-align:left;padding:10px 7px;border-bottom:1px solid var(--line)}.history th{color:var(--muted);font-weight:600}.empty{color:var(--muted);font-size:13px;padding:13px 0}.footer{color:#657991;font-size:11px;text-align:center;margin-top:30px}.config{display:flex;gap:8px;margin-top:14px}.config input{min-width:0;flex:1;background:#091321;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px;font-size:12px}
-@media(max-width:800px){.grid{grid-template-columns:1fr}.top{align-items:flex-start}.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:460px){.wrap{padding:18px 13px 40px}.panel{padding:16px}.stats{gap:6px}.stat{padding:9px}.stat b{font-size:19px}.metrics{grid-template-columns:1fr 1fr}}
+:root{color-scheme:dark;--bg:#080d17;--panel:#101a2a;--line:#1d2c40;--muted:#8fa2b9;--text:#edf5ff;--cyan:#48d9ed;--green:#4adea4;--red:#ff687d;--amber:#f6c66a}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% -15%,#123044 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+a{color:var(--cyan)}.wrap{max-width:1160px;margin:auto;padding:24px 20px 60px}.top{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:34px}.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.14em}.mark{width:38px;height:38px;border:1px solid #2b8798;border-radius:11px;display:grid;place-items:center;color:var(--cyan);font-size:21px;background:#102a39}.status{font-size:12px;color:var(--muted)}.hero{margin-bottom:25px}.eyebrow{color:var(--cyan);font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase}.hero h1{font-size:clamp(28px,5vw,42px);line-height:1.1;margin:8px 0 10px;letter-spacing:-.04em}.hero p{color:var(--muted);max-width:720px;margin:0}.panel{background:linear-gradient(145deg,#111d2e,#0d1625);border:1px solid var(--line);border-radius:17px;padding:22px;box-shadow:0 14px 45px #0002}.panel h2{font-size:17px;margin:0 0 5px}.sub{color:var(--muted);font-size:13px;margin:0 0 18px}.authgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.field{display:block;margin:13px 0}.field span{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}.field input{width:100%;background:#091321;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:12px;font-size:14px}.btn{border:0;border-radius:9px;padding:11px 17px;background:var(--cyan);color:#06131b;font-weight:750;cursor:pointer}.btn:disabled{opacity:.45;cursor:not-allowed}.btn.secondary{background:#17283a;color:var(--text);border:1px solid #2b4058}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:17px}.notice{font-size:12px;color:#b5c5d8;margin-top:14px;padding:13px;background:#0b1522;border-radius:10px;border:1px solid #1a2a3c}.notice.warn{border-color:#6a5124;color:#f4d58f}.notice.error{border-color:#6a2937;color:#ff9aaa}.check{display:flex;gap:10px;align-items:flex-start;font-size:12px;color:#bdcadd;margin-top:14px}.check input{margin-top:4px;accent-color:var(--cyan)}.hidden{display:none!important}.grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr);gap:18px}.drop{border:1px dashed #38536a;border-radius:13px;background:#0a1421;padding:27px 18px;text-align:center}.drop.over{border-color:var(--cyan);background:#0d2532}.drop strong{display:block;margin:8px 0 3px}.drop small{color:var(--muted)}input[type=file]{display:none}.fileline{margin-top:14px;display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:13px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}.stat{background:#0b1522;border:1px solid var(--line);border-radius:11px;padding:13px}.stat b{display:block;font-size:23px}.stat span{font-size:11px;color:var(--muted)}.result{margin-top:18px;display:none}.verdict{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px;border-radius:12px;background:#0a1421;border:1px solid var(--line)}.pill{font-size:11px;font-weight:800;padding:6px 9px;border-radius:99px;background:#233144}.pill.synthetic{background:#481d2b;color:#ff9aaa}.pill.human{background:#123b34;color:#80f0c5}.pill.inconclusive{background:#49381b;color:#ffdc91}.confidence{font-size:27px;font-weight:750;color:var(--cyan)}.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-top:12px}.metric{background:#0b1522;border:1px solid var(--line);padding:11px;border-radius:10px}.metric span{display:block;color:var(--muted);font-size:11px}.metric b{font-size:14px;overflow-wrap:anywhere}.evidence{margin-top:13px}.evidence ul{padding-left:18px;color:#c4d2e2;font-size:13px}.evidence li{margin:6px 0}.history{margin-top:18px}.history table{width:100%;border-collapse:collapse;font-size:12px}.history th,.history td{text-align:left;padding:10px 7px;border-bottom:1px solid var(--line);vertical-align:top}.history th{color:var(--muted)}.empty{color:var(--muted);font-size:13px;padding:13px 0}.footer{color:#657991;font-size:11px;text-align:center;margin-top:30px}.topactions{display:flex;gap:8px;align-items:center}.email{color:var(--muted);font-size:12px;max-width:220px;overflow-wrap:anywhere}
+@media(max-width:800px){.grid,.authgrid{grid-template-columns:1fr}.top{align-items:flex-start}.stats{grid-template-columns:repeat(3,1fr)}}@media(max-width:460px){.wrap{padding:18px 13px 40px}.panel{padding:16px}.stats{gap:6px}.stat{padding:9px}.stat b{font-size:19px}.metrics{grid-template-columns:1fr 1fr}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.1"></script>
 </head>
 <body><main class="wrap">
-<header class="top"><div class="brand"><div class="mark">V</div><span>VERACUST</span></div><div class="status"><i class="dot" id="healthDot"></i><span id="healthText">Checking API…</span></div></header>
-<section class="hero"><div class="eyebrow">Acoustic authenticity engine</div><h1>Inspect audio. Surface evidence.</h1><p>Run an audio file through Veracust's acoustic analysis engine and review its verdict, channel telemetry and flagged anomalies.</p></section>
-<div class="grid">
-<section class="panel"><h2>New inspection</h2><p class="sub">Upload an audio recording to begin analysis.</p>
-<div class="drop" id="drop"><div class="upload-icon">⌁</div><strong>Drop an audio file here</strong><small>or choose a file from your device</small><div style="margin-top:15px"><label class="btn secondary" for="audioFile">Choose audio</label></div><input id="audioFile" type="file" accept=".wav,.mp3,.m4a,.ogg,.flac,.aac,.webm,audio/*"></div>
-<div class="fileline"><span id="fileName">No file selected</span><span id="fileSize"></span></div>
-<div class="actions"><button class="btn" id="analyze" disabled>Analyze audio</button><button class="btn secondary" id="clear">Clear</button></div>
-<div class="notice">Evaluation environment: audio is uploaded to the Veracust-hosted API for processing. Avoid uploading sensitive or personal recordings. Private customer deployment is a separate, customer-controlled setup.</div>
-<div id="result" class="result"><div class="verdict"><div><div class="eyebrow">Analysis verdict</div><h3 id="verdictName">—</h3><span id="recommended" class="actiontext"></span></div><div style="text-align:right"><div class="confidence" id="confidence">—</div><small style="color:var(--muted)">engine score</small></div></div><div class="metrics" id="metrics"></div><div class="evidence"><h2 style="margin-top:16px">Flagged evidence</h2><ul id="anomalies"></ul></div></div>
-<div id="errorBox" class="notice error" hidden></div>
+<header class="top"><a class="brand" href="https://veracust-website.onrender.com/" style="color:inherit;text-decoration:none"><div class="mark">V</div><span>VERACUST</span></a><div class="topactions"><span class="status" id="healthText">Connecting…</span><button class="btn secondary hidden" id="signOut">Sign out</button></div></header>
+<section class="hero"><div class="eyebrow">Controlled evaluation environment</div><h1>Inspect audio. Surface evidence.</h1><p>Sign in to evaluate Veracust. Your account records access and analysis metadata; uploaded audio is processed temporarily and is not intentionally retained as a recording.</p></section>
+
+<section id="authPanel" class="panel">
+  <div class="authgrid">
+    <div><div class="eyebrow">Customer access</div><h2 id="authTitle">Sign in to Veracust</h2><p class="sub">Create an evaluation account or return to your existing account.</p>
+      <label class="field"><span>Email address</span><input id="email" type="email" autocomplete="email" required placeholder="you@company.com"></label>
+      <label class="field"><span>Password</span><input id="password" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters"></label>
+      <label id="confirmField" class="field hidden"><span>Confirm password</span><input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Repeat password"></label>
+      <label id="signupConsent" class="check hidden"><input id="signupPolicy" type="checkbox"><span>I understand this is a hosted evaluation service, will review the full Evaluation Policy before using analysis, and will not submit confidential or sensitive material.</span></label>
+      <div class="actions"><button id="authSubmit" class="btn">Sign in</button><button id="toggleAuth" class="btn secondary">Create account</button></div>
+      <div id="authMessage" class="notice hidden" role="status"></div>
+    </div>
+    <div><h2>Before you upload</h2><p class="sub">The hosted MVP is for non-sensitive evaluation samples only.</p>
+      <div class="notice warn"><strong>Do not upload:</strong> passwords, API keys, OTPs, financial credentials, identity documents, confidential business files, sensitive personal recordings, or another person's voice without permission.</div>
+      <div class="notice">For confidential recordings, regulated workloads, or production use, contact the Veracust team first and obtain a written agreement. Ask about a customer-controlled private deployment.</div>
+      <p class="sub" style="margin-top:16px">Need help? <a href="mailto:veracust.hq@gmail.com">veracust.hq@gmail.com</a></p>
+    </div>
+  </div>
 </section>
-<aside><section class="panel"><h2>Evaluation activity</h2><p class="sub">Usage reported by the API (shared demo instance).</p><div class="stats"><div class="stat"><b id="total">—</b><span>Inspections</span></div><div class="stat"><b id="synthetic">—</b><span>Synthetic flagged</span></div><div class="stat"><b id="human">—</b><span>Human verdicts</span></div></div><div class="history"><h2 style="margin-top:22px">Recent audit trail</h2><div id="history" class="empty">Loading activity…</div></div><div class="config"><input id="apiBase" aria-label="API base URL" value="https://veracust-v0-2.onrender.com" spellcheck="false"><button class="btn secondary" id="connect">Connect</button></div><p class="sub" style="margin:8px 0 0">API base URL · change this to test another deployment.</p></section>
-<section class="panel" style="margin-top:18px"><h2>How to read the result</h2><p class="sub" style="margin-bottom:0">The score is the engine's returned confidence-style value, not an independently calibrated probability or a guarantee. Treat ambiguous results as a reason for secondary verification. Validate performance against representative test data before operational use.</p></section></aside>
-</div>
-<div class="footer">VERACUST · Evaluation interface · Not a standalone fraud decision system</div></main>
+
+<section id="policyGate" class="panel hidden" style="margin-top:18px">
+  <div class="eyebrow">Required before first inspection</div><h2>Veracust Evaluation Policy</h2><p class="sub">Please read this notice. The current policy version must be accepted before the API will process an upload.</p>
+  <div id="policy" class="notice">
+    <strong>1. Hosted evaluation processing.</strong> When you submit an audio file, your browser sends it to the Veracust evaluation API hosted on Render. The engine temporarily writes the upload to a processing file, analyzes it, and the application attempts to remove that temporary file after processing, including on error paths. Veracust does not intentionally retain uploaded audio as recordings. Temporary processing and infrastructure handling mean this is not a promise that audio never exists in server memory or temporary storage.<br><br>
+    <strong>2. No audio in analytics.</strong> Veracust does not write audio bytes to Supabase. The evaluation database stores account identifiers, policy acceptance, access events, timestamps, verdicts, engine scores and selected technical analysis metadata. The application does not store the original filename in the evaluation record.<br><br>
+    <strong>3. Prohibited uploads.</strong> Do not upload passwords, API keys, one-time codes, financial or account credentials, identity documents, confidential documents, source code, customer data, sensitive personal information, or any file unrelated to the audio test. Do not upload a voice recording unless you own it or have the necessary permission and rights.<br><br>
+    <strong>4. Confidential or production data.</strong> Do not use the hosted evaluation service for confidential, regulated, customer, employee or production recordings. Contact <a href="mailto:veracust.hq@gmail.com">veracust.hq@gmail.com</a> first. A written agreement and consultation with the Veracust team are required before any such evaluation. Ask about a private deployment inside your own cloud environment.<br><br>
+    <strong>5. Service providers.</strong> The evaluation API and account/analytics database are hosted by Render and Supabase respectively. Those providers may process operational information under their own service terms and privacy policies. Veracust's application does not intentionally retain audio, but cannot make guarantees about provider-level infrastructure beyond its configuration and controls.<br><br>
+    <strong>6. Evaluation limitations.</strong> Results are experimental decision-support output, not proof of identity, a guarantee of authenticity, or a substitute for independent verification. Do not rely on a single result to authorize payments, account changes or other high-impact actions.<br><br>
+    <strong>7. Usage records.</strong> Account access and analysis metadata are used to operate the evaluation service, display your activity and measure adoption. Contact the team for questions or data requests.
+  </div>
+  <label class="check"><input id="acceptPolicy" type="checkbox"><span>I have read and understood this policy. I confirm I will only upload audio I am authorized to submit and will not upload credentials, confidential documents or sensitive files without prior written agreement and consultation with the Veracust team.</span></label>
+  <div class="actions"><button id="acceptButton" class="btn">Accept policy and continue</button><button id="policySignOut" class="btn secondary">Sign out</button></div>
+  <div id="policyMessage" class="notice hidden" role="status"></div>
+</section>
+
+<section id="appPanel" class="hidden">
+  <div class="top" style="margin:18px 0"><div><div class="eyebrow">Authenticated evaluation session</div><strong id="welcome">Welcome</strong><div id="accountEmail" class="email"></div></div><span id="sessionStatus" class="status">Signed in</span></div>
+  <div class="grid">
+    <section class="panel"><h2>New inspection</h2><p class="sub">Upload an authorized, non-sensitive audio sample.</p>
+      <div class="drop" id="drop"><div style="font-size:27px;color:var(--cyan)">⌁</div><strong>Drop an audio file here</strong><small>or choose a file from your device</small><div style="margin-top:15px"><label class="btn secondary" for="audioFile">Choose audio</label></div><input id="audioFile" type="file" accept=".wav,.mp3,.m4a,.ogg,.flac,.aac,.webm,audio/*"></div>
+      <div class="fileline"><span id="fileName">No file selected</span><span id="fileSize"></span></div>
+      <div class="actions"><button class="btn" id="analyze" disabled>Analyze audio</button><button class="btn secondary" id="clear">Clear</button></div>
+      <div class="notice">Audio is transmitted to the hosted Veracust API for temporary processing. The application attempts to delete its temporary processing file after analysis. Audio bytes are not stored in the Supabase evaluation database. Do not upload confidential or sensitive material.</div>
+      <div id="result" class="result"><div class="verdict"><div><div class="eyebrow">Analysis verdict</div><h3 id="verdictName">—</h3><div id="recommended" class="sub" style="margin:5px 0 0"></div></div><div style="text-align:right"><div class="confidence" id="confidence">—</div><small style="color:var(--muted)">engine score</small></div></div><div class="metrics" id="metrics"></div><div class="evidence"><h2 style="margin-top:16px">Flagged evidence</h2><ul id="anomalies"></ul></div></div>
+      <div id="errorBox" class="notice error hidden"></div>
+    </section>
+    <aside><section class="panel"><h2>Your evaluation activity</h2><p class="sub">Only activity associated with your account is shown.</p><div class="stats"><div class="stat"><b id="total">—</b><span>Inspections</span></div><div class="stat"><b id="synthetic">—</b><span>Synthetic flagged*</span></div><div class="stat"><b id="logins">—</b><span>Sign-ins</span></div></div><p class="sub" style="margin-top:8px">*Counted within the latest 50 inspection records displayed below.</p><div class="history"><h2 style="margin-top:22px">Recent audit trail</h2><div id="history" class="empty">Loading activity…</div></div></section>
+      <section class="panel" style="margin-top:18px"><h2>Reading the result</h2><p class="sub" style="margin-bottom:0">The engine score is not an independently calibrated probability or a guarantee. Treat ambiguous results as a reason for secondary verification. Validate performance against representative test data before operational use.</p></section></aside>
+  </div>
+</section>
+<div class="footer">VERACUST · Hosted evaluation environment · <a href="https://veracust-website.onrender.com/">Main website</a> · <a href="mailto:veracust.hq@gmail.com">Contact</a></div>
+</main>
 <script>
-const $=id=>document.getElementById(id);let selected=null;let api=localStorage.getItem('veracust_api')||'https://veracust-v0-2.onrender.com';$('apiBase').value=api;
-const fmt=v=>v===undefined||v===null?'—':String(v);
-function pretty(v){return String(v||'').replaceAll('_',' ')}
-function setHealth(ok,msg){$('healthDot').style.background=ok?'var(--green)':'var(--red)';$('healthText').textContent=msg}
-async function getJson(path){const r=await fetch(api.replace(/\/$/,'')+path);if(!r.ok)throw new Error('API returned HTTP '+r.status);return r.json()}
-async function refresh(){try{const [health,stats]=await Promise.all([getJson('/'),getJson('/v1/stats')]);setHealth(true,'API online · '+fmt(health.engine));$('total').textContent=fmt(stats.total_inspections??health.total_streams_audited);$('synthetic').textContent=fmt(stats.synthetic_detected);$('human').textContent=fmt(stats.authentic_human);const rows=stats.recent_audit_trail||[];$('history').innerHTML=rows.length?'<table><thead><tr><th>File</th><th>Verdict</th><th>Score</th></tr></thead><tbody>'+rows.slice().reverse().map(x=>'<tr><td>'+esc(x.file_name||'Audio')+'</td><td>'+esc(pretty(x.verdict))+'</td><td>'+fmt(x.confidence)+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">No inspections recorded yet.</div>'}catch(e){setHealth(false,'API unavailable');$('history').textContent='Could not load stats: '+e.message}}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function choose(file){selected=file||null;$('fileName').textContent=file?file.name:'No file selected';$('fileSize').textContent=file?(file.size/1048576).toFixed(2)+' MB':'';$('analyze').disabled=!file}
-$('audioFile').addEventListener('change',e=>choose(e.target.files[0]));
-$('drop').addEventListener('dragover',e=>{e.preventDefault();$('drop').classList.add('over')});$('drop').addEventListener('dragleave',()=> $('drop').classList.remove('over'));$('drop').addEventListener('drop',e=>{e.preventDefault();$('drop').classList.remove('over');const f=e.dataTransfer.files[0];if(f)choose(f)});
-$('clear').onclick=()=>{choose(null);$('audioFile').value='';$('result').style.display='none';$('errorBox').hidden=true};
-$('connect').onclick=()=>{api=$('apiBase').value.trim().replace(/\/$/,'');localStorage.setItem('veracust_api',api);refresh()};
-$('analyze').onclick=async()=>{if(!selected)return;if(selected.size>25*1024*1024){$('errorBox').hidden=false;$('errorBox').textContent='File exceeds the 25 MB interface limit.';return}const b=$('analyze');b.disabled=true;b.textContent='Analyzing…';$('errorBox').hidden=true;$('result').style.display='none';try{const fd=new FormData();fd.append('file',selected,selected.name);const response=await fetch(api.replace(/\/$/,'')+'/v1/verify',{method:'POST',body:fd});const data=await response.json();if(!response.ok)throw new Error(data.detail||'Verification failed with HTTP '+response.status);if(data.error||data.verdict==='ERROR')throw new Error(data.error||'The engine could not analyze this file.');render(data);await refresh()}catch(e){$('errorBox').hidden=false;$('errorBox').textContent='Inspection failed: '+e.message+' · Check API URL, server status and CORS settings.'}finally{b.disabled=!selected;b.textContent='Analyze audio'}};
-function render(d){$('result').style.display='block';$('verdictName').textContent=pretty(d.verdict);const pill=$('verdictName');pill.className='';const v=d.verdict||'';const cls=v==='SYNTHETIC_DETECTED'?'synthetic':v==='AUTHENTIC_HUMAN'?'human':v==='INCONCLUSIVE_ESCALATE'?'inconclusive':'';pill.innerHTML='<span class="pill '+cls+'">'+esc(pretty(v))+'</span>';$('confidence').textContent=d.confidence_score===undefined?'—':(Number(d.confidence_score)*100).toFixed(1)+'%';$('recommended').textContent='Recommended action: '+pretty(d.recommended_action);const t=d.channel_telemetry||{};const fields=[['Channel profile',t.detected_profile],['Nyquist carrier energy',t.nyquist_carrier_energy],['Ambient noise floor',t.ambient_noise_floor],['Vocal jitter index',t.vocal_jitter_index],['Glottal entropy',t.glottal_entropy]];$('metrics').innerHTML=fields.map(([k,val])=>'<div class="metric"><span>'+esc(k)+'</span><b>'+esc(fmt(val))+'</b></div>').join('');const anomalies=d.anomalies_flagged||[];$('anomalies').innerHTML=anomalies.length?anomalies.map(a=>'<li>'+esc(a)+'</li>').join(''):'<li>No anomaly details returned.</li>'}
-refresh();
+const SUPABASE_URL = "https://rsnmazseqtatbyytseno.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_KQBLEwMHPi4ukDAzcmBpPw_1NVGZ9dX";
+const API_BASE = "https://veracust-v0-2.onrender.com";
+const POLICY_VERSION = "2026-11-17";
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+const $ = id => document.getElementById(id);
+let session = null, selected = null, authMode = "signin";
+const show = (id,yes=true)=>$(id).classList.toggle("hidden",!yes);
+const setMessage=(id,msg,type="")=>{const el=$(id);el.textContent=msg;el.className="notice"+(type?" "+type:"");show(id,true)};
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function setAuthMode(mode){authMode=mode;const signup=mode==="signup";$("authTitle").textContent=signup?"Create your evaluation account":"Sign in to Veracust";$("authSubmit").textContent=signup?"Create account":"Sign in";$("toggleAuth").textContent=signup?"Back to sign in":"Create account";show("confirmField",signup);show("signupConsent",signup);$("password").autocomplete=signup?"new-password":"current-password";}
+$("toggleAuth").onclick=()=>setAuthMode(authMode==="signin"?"signup":"signin");
+async function recordEvent(type){if(!session?.user?.id)return;const {error}=await supabase.from("evaluation_events").insert({user_id:session.user.id,event_type:type,analysis_metadata:{source:"hosted_dashboard"}});if(error)console.warn("Activity event was not saved:",error.message);}
+async function hasAcceptedPolicy(){const {data,error}=await supabase.from("policy_acceptances").select("id").eq("user_id",session.user.id).eq("policy_version",POLICY_VERSION).limit(1);if(error)throw error;return data.length>0;}
+async function updateView(){
+  show("authPanel",!session);show("signOut",!!session);
+  if(!session)return;
+  $("accountEmail").textContent=session.user.email||"Signed-in account";
+  $("welcome").textContent="Welcome to your evaluation workspace";
+  show("appPanel",false);show("policyGate",false);
+  try{
+    const accepted=await hasAcceptedPolicy();
+    if(!accepted){show("policyGate",true);$("acceptPolicy").checked=false;return;}
+    show("appPanel",true);await refreshStats();
+  }catch(e){show("policyGate",true);setMessage("policyMessage","Could not verify your policy acceptance. Please refresh or contact the Veracust team.","error");}
+}
+$("authSubmit").onclick=async()=>{
+  const email=$("email").value.trim(),password=$("password").value;
+  if(!email||!password){setMessage("authMessage","Enter your email and password.","error");return;}
+  const button=$("authSubmit");button.disabled=true;
+  try{
+    if(authMode==="signup"){
+      if(password!==$("confirmPassword").value)throw new Error("Passwords do not match.");
+      if(!$("signupPolicy").checked)throw new Error("Please read and acknowledge the evaluation policy before creating an account.");
+      const {data,error}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin}});if(error)throw error;
+      if(data.session){session=data.session;await recordEvent("signup");await updateView();}
+      else setMessage("authMessage","Account created. Check your email to confirm the address, then sign in. You will be asked to accept the current evaluation policy before uploading.","");
+    }else{
+      const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;
+      session=data.session;await recordEvent("login");await updateView();
+    }
+  }catch(e){setMessage("authMessage",e.message||"Authentication failed.","error");}
+  finally{button.disabled=false;}
+};
+$("acceptButton").onclick=async()=>{
+  if(!$("acceptPolicy").checked){setMessage("policyMessage","Please tick the acknowledgement box to continue.","error");return;}
+  const button=$("acceptButton");button.disabled=true;
+  try{
+    const {error}=await supabase.from("policy_acceptances").insert({user_id:session.user.id,policy_version:POLICY_VERSION});
+    if(error&&error.code!=="23505")throw error;
+    await updateView();
+  }catch(e){setMessage("policyMessage","Could not save your acceptance: "+e.message,"error");}
+  finally{button.disabled=false;}
+};
+async function signOut(){await supabase.auth.signOut();session=null;selected=null;show("appPanel",false);show("policyGate",false);show("authPanel",true);show("signOut",false);}
+$("signOut").onclick=signOut;$("policySignOut").onclick=signOut;
+$("healthText").textContent="Secure account access";
+supabase.auth.onAuthStateChange((_event,newSession)=>{session=newSession;setTimeout(updateView,0);});
+(async()=>{const {data}=await supabase.auth.getSession();session=data.session;await updateView();})();
+const fmt=v=>v===undefined||v===null?"—":String(v);
+function pretty(v){return String(v||"").replaceAll("_"," ");}
+function choose(file){selected=file||null;$("fileName").textContent=file?file.name:"No file selected";$("fileSize").textContent=file?(file.size/1048576).toFixed(2)+" MB":"";$("analyze").disabled=!file;}
+$("audioFile").addEventListener("change",e=>choose(e.target.files[0]));
+$("drop").addEventListener("dragover",e=>{e.preventDefault();$("drop").classList.add("over")});
+$("drop").addEventListener("dragleave",()=> $("drop").classList.remove("over"));
+$("drop").addEventListener("drop",e=>{e.preventDefault();$("drop").classList.remove("over");const f=e.dataTransfer.files[0];if(f)choose(f);});
+$("clear").onclick=()=>{choose(null);$("audioFile").value="";$("result").style.display="none";show("errorBox",false);};
+async function refreshStats(){
+  const response=await fetch(API_BASE+"/v1/stats",{headers:{Authorization:"Bearer "+session.access_token}});
+  const data=await response.json();if(!response.ok)throw new Error(data.detail||"Could not load account activity.");
+  $("total").textContent=fmt(data.total_inspections);$("synthetic").textContent=fmt(data.synthetic_detected);$("logins").textContent=fmt(data.total_logins);
+  const rows=data.recent_audit_trail||[];
+  $("history").innerHTML=rows.length?'<table><thead><tr><th>When</th><th>Verdict</th><th>Score</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+esc(new Date(x.created_at).toLocaleString())+'</td><td>'+esc(pretty(x.verdict))+'</td><td>'+esc(fmt(x.confidence_score))+'</td></tr>').join("")+'</tbody></table>':'<div class="empty">No inspections recorded yet.</div>';
+}
+$("analyze").onclick=async()=>{
+  if(!selected||!session)return;
+  if(selected.size>25*1024*1024){setMessage("errorBox","File exceeds the 25 MB upload limit.","error");return;}
+  const b=$("analyze");b.disabled=true;b.textContent="Analyzing…";show("errorBox",false);$("result").style.display="none";
+  try{
+    const fd=new FormData();fd.append("file",selected,selected.name);
+    const response=await fetch(API_BASE+"/v1/verify",{method:"POST",headers:{Authorization:"Bearer "+session.access_token},body:fd});
+    const data=await response.json();if(!response.ok)throw new Error(data.detail||"Verification failed with HTTP "+response.status);
+    render(data);await refreshStats();
+  }catch(e){setMessage("errorBox","Inspection failed: "+e.message,"error");}
+  finally{b.disabled=!selected;b.textContent="Analyze audio";}
+};
+function render(d){
+  $("result").style.display="block";const v=d.verdict||"UNKNOWN",cls=v==="SYNTHETIC_DETECTED"?"synthetic":v==="AUTHENTIC_HUMAN"?"human":v==="INCONCLUSIVE_ESCALATE"?"inconclusive":"";
+  $("verdictName").innerHTML='<span class="pill '+cls+'">'+esc(pretty(v))+'</span>';
+  $("confidence").textContent=d.confidence_score===undefined?"—":(Number(d.confidence_score)*100).toFixed(1)+"%";
+  $("recommended").textContent="Recommended action: "+pretty(d.recommended_action);
+  const t=d.channel_telemetry||{},fields=[["Channel profile",t.detected_profile],["Nyquist carrier energy",t.nyquist_carrier_energy],["Ambient noise floor",t.ambient_noise_floor],["Vocal jitter index",t.vocal_jitter_index],["Glottal entropy",t.glottal_entropy]];
+  $("metrics").innerHTML=fields.map(([k,val])=>'<div class="metric"><span>'+esc(k)+'</span><b>'+esc(fmt(val))+'</b></div>').join("");
+  const anomalies=d.anomalies_flagged||[];$("anomalies").innerHTML=anomalies.length?anomalies.map(a=>"<li>"+esc(a)+"</li>").join(""):"<li>No anomaly details returned.</li>";
+}
 </script></body></html>
