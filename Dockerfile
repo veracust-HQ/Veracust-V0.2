@@ -16,7 +16,7 @@ COPY requirements.txt .
 RUN python -m pip install --upgrade pip \
     && pip install -r requirements.txt
 
-COPY server.py voice_guard.py ./
+COPY server.py voice_guard.py enterprise_billing.py ./
 
 # Run as an unprivileged user.
 RUN useradd --create-home --uid 10001 veracust \
