@@ -122,7 +122,7 @@ async def event_count(user, event_type):
             )
     except httpx.HTTPError as exc:
         raise HTTPException(status_code=503, detail="Could not load your account activity.") from exc
-    if response.status_code != 200:
+    if response.status_code not in (200, 206):
         raise HTTPException(status_code=503, detail="Could not load your account activity.")
     content_range = response.headers.get("content-range", "*/0")
     try:
