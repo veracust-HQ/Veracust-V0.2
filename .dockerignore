@@ -1,0 +1,16 @@
+.git
+.github
+__pycache__/
+*.py[cod]
+*.log
+.env
+.env.*
+!.env.example
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+temp_*
+veracust_*
+audit_log.json
