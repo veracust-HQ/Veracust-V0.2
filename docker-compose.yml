@@ -1,0 +1,19 @@
+services:
+  veracust-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: veracust-api:local
+    container_name: veracust-api
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=512m
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
