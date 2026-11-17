@@ -148,6 +148,7 @@ async def get_stats(request: Request):
     headers = _supabase_headers(user["token"])
     params = {
         "select": "event_type,verdict,confidence_score,analysis_metadata,created_at",
+        "event_type": "eq.inspection",
         "order": "created_at.desc",
         "limit": "50",
     }
