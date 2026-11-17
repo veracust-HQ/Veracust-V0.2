@@ -55,7 +55,7 @@ API documentation is available at `http://localhost:8000/docs`.
 
 ## 3. Call the private inspection endpoint
 
-Send the audio file to the customer's local API, using the deployment token:
+Send the audio file to the customer's local API, using the deployment token. Supply the same unique `Idempotency-Key` when retrying the same logical inspection:
 
 ```bash
 curl -X POST http://localhost:8000/v1/private/verify \
