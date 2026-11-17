@@ -266,6 +266,7 @@ async def verify_private_audio(
     request: Request,
     file: UploadFile = File(...),
     credentials: HTTPAuthorizationCredentials = Depends(security_scheme),
+    idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ):
     # This route is intended for a customer-controlled Docker deployment.
     # The deployment token is sent only to Veracust's HTTPS control plane;
@@ -279,7 +280,9 @@ async def verify_private_audio(
     if suffix not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=415, detail="Unsupported audio format.")
     
-    idempotency_key = str(uuid4())
+    idempotency_key = idempotency_key or str(uuid4())
+    if len(idempotency_key) < 8 or len(idempotency_key) > 128 or not all(ch.isalnum() or ch in "._:-" for ch in idempotency_key):
+        raise HTTPException(status_code=400, detail="Idempotency-Key must be 8-128 safe characters.")
     authorization = await _control_plane_call(
         "/v1/control/authorize",
         deployment_token,
