@@ -291,6 +291,7 @@ async def verify_private_audio(
 
     temp_path = None
     finalized = False
+    analysis_succeeded = False
     try:
         with tempfile.NamedTemporaryFile(prefix="veracust_", suffix=suffix, delete=False) as tmp:
             temp_path = tmp.name
@@ -310,6 +311,7 @@ async def verify_private_audio(
         result = guard.verify(temp_path)
         if result.get("verdict") == "ERROR":
             raise HTTPException(status_code=422, detail="Audio could not be decoded or analyzed.")
+        analysis_succeeded = True
 
         # Finalize only after the engine returns a successful analysis result.
         finalization_error = None
@@ -333,7 +335,7 @@ async def verify_private_audio(
         # No audio, filename, transcript, or detection metadata is transmitted centrally.
         return result
     except Exception:
-        if not finalized:
+        if not finalized and not analysis_succeeded:
             try:
                 await _control_plane_call(
                     "/v1/control/finalize",
