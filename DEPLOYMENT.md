@@ -1,32 +1,43 @@
-# Veracust private deployment (Docker)
+# Veracust private enterprise deployment
 
-This package runs the Veracust FastAPI service inside a customer-controlled Docker environment. Audio uploads are processed by the API container. The current application writes a temporary working file during analysis and attempts to delete it in a `finally` block; this is not a guarantee about host snapshots, container-runtime diagnostics, backups, swap, or infrastructure-level retention. Configure those controls in the customer's environment.
+This Docker package runs the Veracust detection engine inside the customer's controlled environment. In enterprise mode, audio is uploaded to and analyzed by this local container. The container sends only a deployment credential and minimal authorization/usage messages to Veracust's hosted control plane over HTTPS. It does not send audio bytes, filenames, transcripts, or detection output to the control plane.
+
+The application writes a temporary working file during analysis and attempts to delete it in a `finally` block. This is not a guarantee about host snapshots, container-runtime diagnostics, backups, swap, or infrastructure-level retention. Configure those controls in the customer's environment.
+
+## Architecture
+
+- Customer audio is analyzed inside the customer Docker environment.
+- Veracust retains the central Supabase project and controls subscriptions, deployment credentials, included/bonus usage, overage caps, and usage reservations.
+- Before each private inspection, Docker asks the Veracust control plane to reserve one call.
+- If the subscription is inactive, the deployment is revoked, the spending cap is reached, or the control plane cannot be reached, the inspection is not started.
+- After a successful local analysis, Docker finalizes the reservation. Failed analyses release the reservation and are not billable.
+- The private route is `POST /v1/private/verify`. The existing hosted evaluation route `POST /v1/verify` remains unchanged.
+
+**Connectivity:** enterprise private mode requires outbound HTTPS to Veracust for every inspection authorization and finalization. It is not air-gapped and does not currently support offline usage queues. If Veracust's control plane is unavailable, private inspections fail closed rather than bypassing the spending cap.
 
 ## Requirements
 
 - Docker Engine with Docker Compose plugin
-- Outbound HTTPS access from the API container to the configured Supabase project (current authentication and activity storage dependency)
-- A customer-controlled Supabase project for isolated customer identity and audit metadata, or an explicitly approved shared project
-- A browser frontend origin configured in `FRONTEND_ORIGIN`
+- Outbound HTTPS from the customer container to `https://veracust-v0-2.onrender.com` (or the control-plane URL supplied by Veracust)
+- A deployment token issued by Veracust for the customer's active subscription
+- TLS and network access controls for the customer's own API endpoint
 
-## 1. Configure environment
+## 1. Configure the customer container
 
-Copy the example file and fill in the values:
+Copy the example file:
 
 ```bash
 cp .env.example .env
 ```
 
 Set:
-- `SUPABASE_URL`: customer Supabase project URL
-- `SUPABASE_PUBLISHABLE_KEY`: that project's publishable key
-- `FRONTEND_ORIGIN`: exact origin(s) of the customer-hosted dashboard, comma-separated
+- `VERACUST_CONTROL_PLANE_URL`: Veracust-hosted control-plane URL.
+- `VERACUST_DEPLOYMENT_TOKEN`: one-time deployment credential supplied by Veracust.
+- `FRONTEND_ORIGIN`: only if a browser frontend calls this API.
 
-Do not put a Supabase service-role key in this file. The current API validates the user's bearer token and accesses the tables with that user's token.
+The enterprise private route does not require a customer Supabase project. Do not place Veracust's Supabase service-role key or administrator API key in the customer container. Do not commit `.env` to source control.
 
-The Supabase project must have the Veracust schema and row-level security policies for `policy_acceptances` and `evaluation_events`. Apply the migration supplied by Veracust to the customer's project before starting the API. Do not reuse the Veracust hosted-demo project for a customer production deployment unless that arrangement is explicitly approved.
-
-## 2. Build and start
+## 2. Start the engine
 
 ```bash
 docker compose build
@@ -42,36 +53,80 @@ docker compose logs -f veracust-api
 
 API documentation is available at `http://localhost:8000/docs`.
 
-## 3. Connect the dashboard
+## 3. Call the private inspection endpoint
 
-Set the customer dashboard's API base URL to the customer API address, for example:
+Send the audio file to the customer's local API, using the deployment token:
 
+```bash
+curl -X POST http://localhost:8000/v1/private/verify \
+  -H "Authorization: Bearer $VERACUST_DEPLOYMENT_TOKEN" \
+  -F "file=@sample.wav"
 ```
-https://veracust-api.customer.example.com
+
+In production, call this endpoint over the customer's private network or behind a TLS-terminating reverse proxy. Do not expose it publicly without access-control review.
+
+## 4. Veracust hosted control-plane configuration
+
+These variables belong only on Veracust's hosted API service (for example, the Render service), never in the customer's Docker environment:
+
+- `SUPABASE_URL`: Veracust-owned production Supabase URL.
+- `SUPABASE_SERVICE_ROLE_KEY`: Supabase service-role secret; keep it in the hosted secret manager.
+- `VERACUST_ADMIN_API_KEY`: long random administrator secret used to provision deployments.
+- Existing `SUPABASE_PUBLISHABLE_KEY` remains for the hosted evaluation/login routes.
+
+The hosted API must have the enterprise billing schema applied before enabling customer deployments.
+
+### Provision a deployment credential
+
+First create/activate the customer's account and paid subscription in the Veracust billing administration workflow. The subscription must have:
+- `status = active`
+- a valid `current_period_start` and `current_period_end`
+- the correct plan allowance and bonus allowance
+- an explicit `overage_cap_usd_micros` value accepted by the customer
+- billing consent timestamps and the accepted overage-rate version
+
+Then call the hosted administrator endpoint:
+
+```bash
+curl -X POST https://veracust-v0-2.onrender.com/v1/admin/deployments \
+  -H "X-Veracust-Admin-Key: $VERACUST_ADMIN_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "account_id": "CUSTOMER_ACCOUNT_UUID",
+    "subscription_id": "ACTIVE_SUBSCRIPTION_UUID",
+    "deployment_name": "customer-primary"
+  }'
 ```
 
-The browser must be able to reach this address over HTTPS. Configure the reverse proxy, TLS certificate, firewall rules, DNS, and `FRONTEND_ORIGIN` accordingly. Do not expose the API publicly without TLS and an access-control review.
+The response contains a random deployment token exactly once. Deliver it securely to the customer and store it as `VERACUST_DEPLOYMENT_TOKEN`. Supabase stores only its SHA-256 hash. If the token is lost or compromised, revoke that deployment and issue a replacement.
 
-## 4. Operational security checklist
+## 5. Billing behavior
 
-- Keep `.env` out of source control and restrict access to it.
-- Use a customer-controlled Supabase project and apply the supplied RLS policies.
-- Restrict inbound access to the API to the customer dashboard / approved network.
-- Terminate TLS at a trusted reverse proxy or load balancer.
-- Review container logs and reverse-proxy logs to ensure they do not contain uploaded audio or credentials.
-- Disable unnecessary request-body logging, tracing, and payload capture.
-- Protect host storage, backups, snapshots, swap, and administrator access.
-- Set resource limits and monitor CPU, RAM, disk, and request sizes.
-- Keep Docker images and Python dependencies patched; pin and test dependency versions before production rollout.
-- Perform security, privacy, and performance validation in the customer's environment before handling sensitive recordings.
+- One successfully completed local analysis counts as one call.
+- Failed decoding/analysis attempts release their reservation and do not count.
+- Included calls are consumed before bonus calls; overage begins after both are exhausted.
+- Overage is currently configured at USD $0.005 per successful call.
+- The monthly overage spending cap is enforced centrally. The reserve operation rejects a call that would exceed it.
+- Usage notifications are queued at 80% and 95%; notification delivery still needs an email/dashboard worker.
+- At the cap, new inspections are blocked.
+- The plan allowance and bonus are subscription-term totals; the overage spending cap is tracked by calendar-month segment within the subscription term.
 
-## Important architecture note
+## 6. Current implementation boundaries
 
-This Docker package containerizes the current API and detection engine. It does **not** make the current application fully air-gapped: authentication, policy acceptance, and evaluation metadata still depend on Supabase over HTTPS. A fully disconnected/on-premises edition would require a separate local identity and audit-storage implementation, plus a customer-managed migration path. The current package must not be marketed as air-gapped.
+This change provides deployment-token provisioning, central authorization, reservation/finalization, and local analysis integration. It does **not** yet implement checkout/card collection, payment-provider webhooks, subscription purchase/renewal automation, invoice settlement, notification delivery, an enterprise dashboard, or automated recovery of reservations left pending after a process or network crash. Those are required before commercial launch.
 
-## Current limitations
+The admin endpoint requires an active subscription row already created by a trusted billing administrator. Never activate subscriptions based solely on a browser request or customer-supplied payment claim.
 
-- The API currently uses Supabase authentication and the `policy_acceptances` / `evaluation_events` tables.
-- The dashboard is a separate frontend and must be hosted by the customer or configured to call the customer's API.
-- The Docker build is a starting deployment artifact; validate it against the target customer's OS, CPU architecture, audio formats, security controls, and workload before production use.
-- Detection output is an evaluation signal, not a guarantee of fraud detection. Benchmark false-positive and false-negative rates on representative customer audio before operational decisions.
+## 7. Operational security checklist
+
+- Keep customer deployment tokens in a secret manager; rotate/revoke compromised tokens.
+- Keep service-role and admin keys only in Veracust's hosted secret manager.
+- Restrict customer API ingress to approved private networks and use TLS.
+- Disable request-body logging and payload capture.
+- Review host storage, backups, snapshots, swap, and administrator access.
+- Protect logs so they do not contain uploaded audio, filenames, credentials, or transcripts.
+- Set CPU, memory, disk, and request-size limits.
+- Patch and pin dependencies; build and test images for each target architecture.
+- Validate false-positive and false-negative rates on representative customer audio before operational decisions.
+
+Detection output is an evaluation signal, not a guarantee of fraud detection.
