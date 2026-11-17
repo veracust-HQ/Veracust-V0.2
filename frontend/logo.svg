@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 176">
+<defs><filter id="g" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><radialGradient id="bg"><stop stop-color="#09040f"/><stop offset="1" stop-color="#000"/></radialGradient></defs>
+<rect width="180" height="176" fill="url(#bg)"/>
+<circle cx="90" cy="88" r="76" fill="#020104" stroke="#8b00ff" stroke-width="3.2" filter="url(#g)"/>
+<path d="M20 111 Q90 158 160 111" fill="none" stroke="#b000ff" stroke-width="1" opacity=".7"/>
+<g fill="#fff" opacity=".7"><circle cx="8" cy="20" r="1"/><circle cx="167" cy="28" r="1"/><circle cx="14" cy="147" r="1"/><circle cx="170" cy="153" r="1"/><circle cx="28" cy="8" r=".7"/><circle cx="151" cy="7" r=".7"/></g>
+<text x="90" y="97" text-anchor="middle" fill="#fff" font-family="Georgia,serif" font-size="21" font-weight="bold" letter-spacing="1">VERACUST</text>
+</svg>
