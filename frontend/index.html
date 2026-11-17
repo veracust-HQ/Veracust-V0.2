@@ -90,8 +90,19 @@ async function updateView(){
   try{
     const accepted=await hasAcceptedPolicy();
     if(!accepted){show("policyGate",true);$("acceptPolicy").checked=false;return;}
-    show("appPanel",true);await refreshStats();
-  }catch(e){show("policyGate",true);setMessage("policyMessage","Could not verify your policy acceptance. Please refresh or contact the Veracust team.","error");}
+    show("policyGate",false);
+    show("appPanel",true);
+    try {
+      await refreshStats();
+    } catch (statsError) {
+      console.warn("Account activity could not be refreshed:", statsError);
+      $("history").textContent = "Your workspace is ready. Account activity could not be refreshed right now.";
+    }
+  }catch(e){
+    show("appPanel",false);
+    show("policyGate",true);
+    setMessage("policyMessage","Could not verify your policy acceptance. Please refresh or contact the Veracust team.","error");
+  }
 }
 $("authSubmit").onclick=async()=>{
   const email=$("email").value.trim(),password=$("password").value;
@@ -149,7 +160,7 @@ $("analyze").onclick=async()=>{
     const fd=new FormData();fd.append("file",selected,selected.name);
     const response=await fetch(API_BASE+"/v1/verify",{method:"POST",headers:{Authorization:"Bearer "+session.access_token},body:fd});
     const data=await response.json();if(!response.ok)throw new Error(data.detail||"Verification failed with HTTP "+response.status);
-    render(data);await refreshStats();
+    render(data);refreshStats().catch(statsError=>{console.warn("Analysis completed, but activity refresh failed:",statsError);$("history").textContent="Analysis completed. Account activity could not be refreshed right now.";});
   }catch(e){setMessage("errorBox","Inspection failed: "+e.message,"error");}
   finally{b.disabled=!selected;b.textContent="Analyze audio";}
 };
