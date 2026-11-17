@@ -21,7 +21,7 @@ a{color:var(--cyan)}.wrap{max-width:1160px;margin:auto;padding:24px 20px 60px}.t
       <label class="field"><span>Email address</span><input id="email" type="email" autocomplete="email" required placeholder="you@company.com"></label>
       <label class="field"><span>Password</span><input id="password" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters"></label>
       <label id="confirmField" class="field hidden"><span>Confirm password</span><input id="confirmPassword" type="password" autocomplete="new-password" minlength="8" placeholder="Repeat password"></label>
-      <label id="signupConsent" class="check hidden"><input id="signupPolicy" type="checkbox"><span>I have read the <a href="#policy">Evaluation Policy</a> and understand that this is a hosted evaluation service.</span></label>
+      <label id="signupConsent" class="check hidden"><input id="signupPolicy" type="checkbox"><span>I understand this is a hosted evaluation service, will review the full Evaluation Policy before using analysis, and will not submit confidential or sensitive material.</span></label>
       <div class="actions"><button id="authSubmit" class="btn">Sign in</button><button id="toggleAuth" class="btn secondary">Create account</button></div>
       <div id="authMessage" class="notice hidden" role="status"></div>
     </div>
@@ -101,7 +101,7 @@ $("authSubmit").onclick=async()=>{
     if(authMode==="signup"){
       if(password!==$("confirmPassword").value)throw new Error("Passwords do not match.");
       if(!$("signupPolicy").checked)throw new Error("Please read and acknowledge the evaluation policy before creating an account.");
-      const {data,error}=await supabase.auth.signUp({email,password});if(error)throw error;
+      const {data,error}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin}});if(error)throw error;
       if(data.session){session=data.session;await recordEvent("signup");await updateView();}
       else setMessage("authMessage","Account created. Check your email to confirm the address, then sign in. You will be asked to accept the current evaluation policy before uploading.","");
     }else{
