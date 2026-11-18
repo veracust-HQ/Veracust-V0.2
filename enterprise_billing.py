@@ -167,8 +167,8 @@ async def list_enterprise_plans(request: Request):
     plans = []
     for row in response.json():
         months = int(row["term_months"])
-        monthly_equivalent_cents = (int(row["price_usd_cents"]) + months // 2) // months
-        cap_cents = (monthly_equivalent_cents * 90 + 50) // 100
+        monthly_equivalent_cents = (int(row["price_usd_cents"]) * 90 + months * 50) // (months * 100)
+        cap_cents = monthly_equivalent_cents
         plans.append({
             **row,
             "monthly_overage_cap_usd_cents": cap_cents,
@@ -204,8 +204,8 @@ async def record_enterprise_consent(body: EnterpriseConsent, request: Request):
 
     months = int(plan["term_months"])
     price_cents = int(plan["price_usd_cents"])
-    monthly_equivalent_cents = (price_cents + months // 2) // months
-    cap_cents = (monthly_equivalent_cents * 90 + 50) // 100
+    monthly_equivalent_cents = (price_cents * 90 + months * 50) // (months * 100)
+    cap_cents = monthly_equivalent_cents
     accepted_at = datetime.now(timezone.utc).isoformat()
     subscription_payload = {
         "account_id": account_id,
