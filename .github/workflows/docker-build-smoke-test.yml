@@ -70,6 +70,62 @@ jobs:
           grep -q '"/v1/control/finalize"' /tmp/openapi.json
           curl --fail --silent http://127.0.0.1:8000/ >/dev/null
 
+      - name: Generate safe synthetic audio and analyze it inside Docker
+        run: |
+          python - <<'PY'
+          import math
+          import random
+          import struct
+          import wave
+
+          random.seed(42)
+          sample_rate = 22050
+          duration_seconds = 3
+          with wave.open("/tmp/veracust-smoke.wav", "wb") as audio:
+              audio.setnchannels(1)
+              audio.setsampwidth(2)
+              audio.setframerate(sample_rate)
+              frames = bytearray()
+              for index in range(sample_rate * duration_seconds):
+                  t = index / sample_rate
+                  envelope = min(1.0, t / 0.12, (duration_seconds - t) / 0.18)
+                  fundamental = 145 + 3 * math.sin(2 * math.pi * 3.2 * t)
+                  phase = 2 * math.pi * fundamental * t
+                  signal = (
+                      0.22 * math.sin(phase)
+                      + 0.08 * math.sin(2 * phase)
+                      + 0.035 * math.sin(3 * phase)
+                      + random.uniform(-0.006, 0.006)
+                  ) * max(0.0, envelope)
+                  value = max(-1.0, min(1.0, signal))
+                  frames.extend(struct.pack("<h", int(value * 32767)))
+              audio.writeframes(frames)
+          PY
+          docker cp /tmp/veracust-smoke.wav veracust-smoke:/tmp/veracust-smoke.wav
+          docker exec veracust-smoke python voice_guard.py /tmp/veracust-smoke.wav > /tmp/veracust-result.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          result = json.loads(Path("/tmp/veracust-result.json").read_text())
+          assert result.get("verdict") in {
+              "AUTHENTIC_HUMAN",
+              "SYNTHETIC_DETECTED",
+              "INCONCLUSIVE_ESCALATE",
+          }, f"Audio engine returned an error: {result}"
+          telemetry = result.get("channel_telemetry")
+          assert isinstance(telemetry, dict) and telemetry, f"Missing telemetry: {result}"
+          required = {
+              "detected_profile",
+              "nyquist_carrier_energy",
+              "ambient_noise_floor",
+              "vocal_jitter_index",
+              "glottal_entropy",
+          }
+          assert required.issubset(telemetry), f"Incomplete telemetry: {telemetry}"
+          print("Docker audio-analysis smoke test passed:", result["verdict"])
+          PY
+
       - name: Show container logs on failure
         if: failure()
         run: docker logs veracust-smoke || true
