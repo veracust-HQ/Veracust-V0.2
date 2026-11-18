@@ -45,33 +45,9 @@ jobs:
           load: true
           push: false
 
-      - name: Start container with production-like restrictions
+      - name: Generate safe synthetic audio fixture
         run: |
-          docker run -d --rm \
-            --name veracust-smoke \
-            --read-only \
-            --tmpfs /tmp:rw,noexec,nosuid,size=512m \
-            --cap-drop ALL \
-            --security-opt no-new-privileges:true \
-            -p 8000:8000 \
-            veracust-api:ci
-
-      - name: Verify API startup and enterprise routes
-        run: |
-          for attempt in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:8000/openapi.json -o /tmp/openapi.json; then
-              break
-            fi
-            sleep 3
-          done
-          test -s /tmp/openapi.json
-          grep -q '"/v1/private/verify"' /tmp/openapi.json
-          grep -q '"/v1/control/authorize"' /tmp/openapi.json
-          grep -q '"/v1/control/finalize"' /tmp/openapi.json
-          curl --fail --silent http://127.0.0.1:8000/ >/dev/null
-
-      - name: Generate safe synthetic audio and analyze it inside Docker
-        run: |
+          mkdir -p /tmp/veracust-fixtures
           python - <<'PY'
           import math
           import random
@@ -81,7 +57,7 @@ jobs:
           random.seed(42)
           sample_rate = 22050
           duration_seconds = 3
-          with wave.open("/tmp/veracust-smoke.wav", "wb") as audio:
+          with wave.open("/tmp/veracust-fixtures/veracust-smoke.wav", "wb") as audio:
               audio.setnchannels(1)
               audio.setsampwidth(2)
               audio.setframerate(sample_rate)
@@ -101,8 +77,36 @@ jobs:
                   frames.extend(struct.pack("<h", int(value * 32767)))
               audio.writeframes(frames)
           PY
-          docker cp /tmp/veracust-smoke.wav veracust-smoke:/tmp/veracust-smoke.wav
-          docker exec veracust-smoke python voice_guard.py /tmp/veracust-smoke.wav > /tmp/veracust-result.json
+
+      - name: Start container with production-like restrictions
+        run: |
+          docker run -d --rm \
+            --name veracust-smoke \
+            --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=512m \
+            --mount type=bind,src=/tmp/veracust-fixtures,dst=/app/test-audio,readonly \
+            --cap-drop ALL \
+            --security-opt no-new-privileges:true \
+            -p 8000:8000 \
+            veracust-api:ci
+
+      - name: Verify API startup and enterprise routes
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8000/openapi.json -o /tmp/openapi.json; then
+              break
+            fi
+            sleep 3
+          done
+          test -s /tmp/openapi.json
+          grep -q '"/v1/private/verify"' /tmp/openapi.json
+          grep -q '"/v1/control/authorize"' /tmp/openapi.json
+          grep -q '"/v1/control/finalize"' /tmp/openapi.json
+          curl --fail --silent http://127.0.0.1:8000/ >/dev/null
+
+      - name: Analyze synthetic audio inside Docker
+        run: |
+          docker exec veracust-smoke sh -c 'mkdir -p /tmp/numba-cache && NUMBA_CACHE_DIR=/tmp/numba-cache python voice_guard.py /app/test-audio/veracust-smoke.wav' > /tmp/veracust-result.json
           python - <<'PY'
           import json
           from pathlib import Path
