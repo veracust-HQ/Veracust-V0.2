@@ -50,6 +50,21 @@ a{color:var(--cyan)}.wrap{max-width:1160px;margin:auto;padding:24px 20px 60px}.t
 </section>
 
 <section id="appPanel" class="hidden">
+
+  <section class="panel" id="enterpriseBillingPanel" style="margin-bottom:18px">
+    <div class="eyebrow">Enterprise subscription</div>
+    <h2 style="margin-top:6px">Choose a plan and review usage charges</h2>
+    <p class="sub">Your overage spending cap is 90% of the plan's monthly-equivalent price. Successful analyses beyond included and bonus calls cost $0.005 each. New inspections are blocked when the cap is reached.</p>
+    <label class="field"><span>Enterprise plan</span><select id="enterprisePlan" style="width:100%;background:#091321;color:var(--text);border:1px solid var(--line);border-radius:9px;padding:12px"></select></label>
+    <div class="notice" id="enterprisePlanSummary">Loading available plans…</div>
+    <label class="check"><input type="checkbox" id="acceptPlanPrice"><span>I accept the displayed subscription plan price and understand this request remains pending until payment processing is completed.</span></label>
+    <label class="check"><input type="checkbox" id="acceptOverageRate"><span>I explicitly accept the overage price of $0.005 per successful analysis after included and bonus calls are used.</span></label>
+    <label class="check"><input type="checkbox" id="acceptSpendingCap"><span>I explicitly accept the monthly overage spending cap shown above, equal to 90% of the selected plan's monthly-equivalent price. New inspections will be blocked when this cap is reached.</span></label>
+    <div class="actions"><button class="btn" id="submitEnterpriseConsent">Confirm plan and billing consent</button></div>
+    <div id="enterpriseConsentMessage" class="notice hidden" role="status"></div>
+    <p class="sub" style="margin:12px 0 0">No card is collected and no payment is charged by this step. Your subscription remains pending payment; deployment access is not activated.</p>
+  </section>
+
   <div class="top" style="margin:18px 0"><div><div class="eyebrow">Authenticated evaluation session</div><strong id="welcome">Welcome</strong><div id="accountEmail" class="email"></div></div><span id="sessionStatus" class="status">Signed in</span></div>
   <div class="grid">
     <section class="panel"><h2>New inspection</h2><p class="sub">Upload an authorized, non-sensitive audio sample.</p>
@@ -92,6 +107,7 @@ async function updateView(){
     if(!accepted){show("policyGate",true);$("acceptPolicy").checked=false;return;}
     show("policyGate",false);
     show("appPanel",true);
+    try { await loadEnterprisePlans(); } catch (billingError) { setMessage("enterpriseConsentMessage","Enterprise plans could not be loaded: "+billingError.message,"error"); }
     try {
       await refreshStats();
     } catch (statsError) {
@@ -137,6 +153,25 @@ $("signOut").onclick=signOut;$("policySignOut").onclick=signOut;
 $("healthText").textContent="Secure account access";
 supabase.auth.onAuthStateChange((_event,newSession)=>{session=newSession;setTimeout(updateView,0);});
 (async()=>{const {data}=await supabase.auth.getSession();session=data.session;await updateView();})();
+
+async function loadEnterprisePlans(){
+  const response=await fetch(API_BASE+"/v1/enterprise/plans",{headers:{Authorization:"Bearer "+session.access_token}});
+  const data=await response.json();if(!response.ok)throw new Error(data.detail||"Could not load enterprise plans.");
+  const select=$("enterprisePlan");select.innerHTML="";
+  data.plans.forEach(plan=>{const option=document.createElement("option");option.value=plan.plan_code;option.textContent=plan.display_name+" — $"+(Number(plan.price_usd_cents)/100).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" / "+plan.term_months+" month(s)";select.appendChild(option);});
+  const update=()=>{const plan=data.plans.find(p=>p.plan_code===select.value);if(!plan)return;$("enterprisePlanSummary").textContent=plan.display_name+": $"+(Number(plan.price_usd_cents)/100).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})+" for the term; "+Number(plan.included_calls).toLocaleString("en-US")+" included calls; "+Number(plan.standard_bonus_calls).toLocaleString("en-US")+" bonus calls; $0.005 per successful overage analysis; monthly cap $"+plan.monthly_overage_cap_usd+".";};
+  select.onchange=update;update();
+}
+$("submitEnterpriseConsent").onclick=async()=>{
+  const button=$("submitEnterpriseConsent");button.disabled=true;show("enterpriseConsentMessage",false);
+  try{
+    const response=await fetch(API_BASE+"/v1/enterprise/consent",{method:"POST",headers:{Authorization:"Bearer "+session.access_token,"Content-Type":"application/json"},body:JSON.stringify({plan_code:$("enterprisePlan").value,accept_plan_price:$("acceptPlanPrice").checked,accept_overage_rate:$("acceptOverageRate").checked,accept_spending_cap:$("acceptSpendingCap").checked})});
+    const data=await response.json();if(!response.ok)throw new Error(data.detail||"Could not record billing consent.");
+    setMessage("enterpriseConsentMessage","Consent recorded. Subscription status: "+data.status+". Monthly overage cap: $"+data.monthly_overage_cap_usd+". No payment was collected and no deployment was activated.","");
+  }catch(e){setMessage("enterpriseConsentMessage",e.message,"error");}
+  finally{button.disabled=false;}
+};
+
 const fmt=v=>v===undefined||v===null?"—":String(v);
 function pretty(v){return String(v||"").replaceAll("_"," ");}
 function choose(file){selected=file||null;$("fileName").textContent=file?file.name:"No file selected";$("fileSize").textContent=file?(file.size/1048576).toFixed(2)+" MB":"";$("analyze").disabled=!file;}
