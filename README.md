@@ -19,7 +19,7 @@
 
 Veracust is developing an audio authenticity analysis platform for organizations that need to assess the risk of AI-generated or manipulated speech in voice-based workflows.
 
-The platform combines signal-processing features, audio analysis, and an API workflow to help teams evaluate suspicious audio and decide when additional verification is appropriate. It is intended to support—not replace—identity verification, fraud controls, human review, or other security measures.
+The platform combines physics-informed signal analysis, computational audio examination, and an API workflow to help organizations assess audio authenticity across voice-based workflows.
 
 **Current stage:** Veracust is an early-stage product. The hosted evaluation service and versioned Docker packaging are available for controlled testing. Enterprise production deployments, independent performance validation, formal security assessments, and service-level commitments must be agreed and verified before operational use.
 
@@ -38,7 +38,12 @@ These are target use cases, not claims of validated deployment at named customer
 
 At a high level, an audio sample is processed by the Veracust analysis service. The current codebase includes signal-processing and audio-analysis stages intended to extract indicators relevant to synthetic or manipulated speech. Results should be treated as an analytical signal and interpreted in the context of the recording channel, audio quality, and the organization's own risk policy.
 
-A production decision should not rely on a single model score or analysis result. Veracust recommends a layered workflow that can route uncertain cases to secondary verification or human review.
+
+## Technology and research direction
+
+Veracust's approach draws on the physics of sound and the measurable digital characteristics of audio signals. The analysis examines signal-level patterns and computational features that may help distinguish naturally produced speech from synthetic or manipulated audio.
+
+Our engineering roadmap is focused on progressively strengthening this foundation through continued research, improved analytical methods, broader evaluation, and more capable future releases. As the platform evolves, Veracust aims to deliver increasingly robust versions while validating each release through systematic testing.
 
 ## Deployment options
 
@@ -83,7 +88,6 @@ Before deployment, customers should validate:
 4. Authentication, deployment-token handling, and secret rotation.
 5. Retention, deletion, incident response, and access policies.
 
-Do not place Supabase service-role credentials, administrative API keys, or other Veracust operator secrets in a customer container. Use only the deployment credentials issued for that customer environment.
 
 Veracust does not claim a compliance certification or guarantee that every recording can be classified correctly. Security and privacy requirements should be assessed with the Veracust team before handling sensitive workloads.
 
@@ -131,6 +135,10 @@ Never commit `.env`, access tokens, customer audio, or other secrets to source c
 - The current published container release targets `linux/amd64`.
 - Payment processing, automated invoicing, and live subscription collection are not yet implemented.
 - No formal SLA, penetration-test attestation, or compliance certification is claimed in this repository.
+
+## Founder
+
+**Utkarsh Dixit** — Founder, Veracust
 
 ## Support and commercial enquiries
 
