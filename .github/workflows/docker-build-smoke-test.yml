@@ -1,0 +1,79 @@
+name: Docker build and smoke test
+
+on:
+  pull_request:
+    paths:
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - ".dockerignore"
+      - "requirements.txt"
+      - "server.py"
+      - "voice_guard.py"
+      - "enterprise_billing.py"
+      - ".github/workflows/docker-build-smoke-test.yml"
+  push:
+    branches: [main]
+    paths:
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - ".dockerignore"
+      - "requirements.txt"
+      - "server.py"
+      - "voice_guard.py"
+      - "enterprise_billing.py"
+      - ".github/workflows/docker-build-smoke-test.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  docker-build-and-smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build customer image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          tags: veracust-api:ci
+          load: true
+          push: false
+
+      - name: Start container with production-like restrictions
+        run: |
+          docker run -d --rm \
+            --name veracust-smoke \
+            --read-only \
+            --tmpfs /tmp:rw,noexec,nosuid,size=512m \
+            --cap-drop ALL \
+            --security-opt no-new-privileges:true \
+            -p 8000:8000 \
+            veracust-api:ci
+
+      - name: Verify API startup and enterprise routes
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8000/openapi.json -o /tmp/openapi.json; then
+              break
+            fi
+            sleep 3
+          done
+          test -s /tmp/openapi.json
+          grep -q '"/v1/private/verify"' /tmp/openapi.json
+          grep -q '"/v1/control/authorize"' /tmp/openapi.json
+          grep -q '"/v1/control/finalize"' /tmp/openapi.json
+          curl --fail --silent http://127.0.0.1:8000/ >/dev/null
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker logs veracust-smoke || true
+
+      - name: Stop container
+        if: always()
+        run: docker stop veracust-smoke || true
