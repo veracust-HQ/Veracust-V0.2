@@ -100,7 +100,11 @@ curl -X POST https://veracust-v0-2.onrender.com/v1/admin/deployments \
 
 The response contains a random deployment token exactly once. Deliver it securely to the customer and store it as `VERACUST_DEPLOYMENT_TOKEN`. Supabase stores only its SHA-256 hash. If the token is lost or compromised, revoke that deployment and issue a replacement.
 
-## 5. Billing behavior
+## 5. Customer plan selection and billing consent
+
+The authenticated workspace exposes enterprise plan selection and explicit billing consent. The API verifies the signed-in Supabase user, resolves exactly one active usage account, reads the active plan catalog, calculates a monthly overage cap equal to 90% of the plan's monthly-equivalent price (rounded to the nearest cent), and records acceptance of the plan price, $0.005 overage rate, and spending cap. Consent creates or updates a `pending_payment` subscription only; it does not activate service or collect payment. Card collection and payment processing are not implemented.
+
+## 6. Billing behavior
 
 - One successfully completed local analysis counts as one call.
 - Failed decoding/analysis attempts release their reservation and do not count.
@@ -111,13 +115,13 @@ The response contains a random deployment token exactly once. Deliver it securel
 - At the cap, new inspections are blocked.
 - The plan allowance and bonus are subscription-term totals; the overage spending cap is tracked by calendar-month segment within the subscription term.
 
-## 6. Current implementation boundaries
+## 7. Current implementation boundaries
 
-This change provides deployment-token provisioning, central authorization, reservation/finalization, and local analysis integration. It does **not** yet implement checkout/card collection, payment-provider webhooks, subscription purchase/renewal automation, invoice settlement, notification delivery, an enterprise dashboard, or automated recovery of reservations left pending after a process or network crash. Those are required before commercial launch.
+This change provides deployment-token provisioning, central authorization, reservation/finalization, and local analysis integration. It does **not** yet implement card collection/payment processing, payment-provider webhooks, subscription purchase/renewal automation, invoice settlement, notification delivery, an enterprise dashboard, or automated recovery of reservations left pending after a process or network crash. Those are required before commercial launch.
 
 The admin endpoint requires an active subscription row already created by a trusted billing administrator. Never activate subscriptions based solely on a browser request or customer-supplied payment claim.
 
-## 7. Operational security checklist
+## 8. Operational security checklist
 
 - Keep customer deployment tokens in a secret manager; rotate/revoke compromised tokens.
 - Keep service-role and admin keys only in Veracust's hosted secret manager.

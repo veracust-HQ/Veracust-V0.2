@@ -12,7 +12,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 
 import httpx
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 from uuid import UUID
@@ -101,6 +101,168 @@ class FinalizeInspection(BaseModel):
     reservation_id: UUID
     success: bool
 
+
+
+
+BILLING_CONSENT_VERSION = "enterprise-billing-v1-2026-11-18"
+
+
+class EnterpriseConsent(BaseModel):
+    plan_code: str = Field(min_length=3, max_length=80)
+    accept_plan_price: bool
+    accept_overage_rate: bool
+    accept_spending_cap: bool
+
+
+def _user_supabase_headers(access_token: str):
+    url = os.environ.get("SUPABASE_URL", "").rstrip("/")
+    publishable_key = os.environ.get("SUPABASE_PUBLISHABLE_KEY", "")
+    if not url or not publishable_key:
+        raise HTTPException(status_code=503, detail="Account services are not configured.")
+    return url, {
+        "apikey": publishable_key,
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json",
+    }
+
+
+async def _authenticated_customer(request: Request):
+    authorization = request.headers.get("Authorization", "")
+    if not authorization.startswith("Bearer ") or not authorization[7:].strip():
+        raise HTTPException(status_code=401, detail="Sign in before choosing an enterprise plan.")
+    token = authorization[7:].strip()
+    url, headers = _user_supabase_headers(token)
+    try:
+        async with httpx.AsyncClient(timeout=12) as client:
+            response = await client.get(f"{url}/auth/v1/user", headers=headers)
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=503, detail="Could not validate your Veracust session.") from exc
+    if response.status_code != 200:
+        raise HTTPException(status_code=401, detail="Your Veracust session has expired. Please sign in again.")
+    user = response.json()
+    if not user.get("id"):
+        raise HTTPException(status_code=401, detail="Could not identify your Veracust account.")
+    return {"id": user["id"], "token": token}
+
+
+async def _service_request(method: str, url: str, headers: dict, path: str, **kwargs):
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            response = await client.request(method, f"{url}/rest/v1/{path}", headers=headers, **kwargs)
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=503, detail="Veracust billing service is temporarily unavailable.") from exc
+    if response.status_code not in (200, 201, 204):
+        raise HTTPException(status_code=503, detail="Veracust could not save the enterprise billing request.")
+    return response
+
+
+@router.get("/v1/enterprise/plans", summary="List enterprise plans and calculated spending caps")
+async def list_enterprise_plans(request: Request):
+    await _authenticated_customer(request)
+    url, headers = _admin_headers()
+    response = await _service_request(
+        "GET", url, headers, "enterprise_plan_catalog",
+        params={"select": "plan_code,display_name,term_months,price_usd_cents,included_calls,standard_bonus_calls,overage_price_usd_micros", "active": "eq.true", "order": "term_months.asc"},
+    )
+    plans = []
+    for row in response.json():
+        months = int(row["term_months"])
+        monthly_equivalent_cents = (int(row["price_usd_cents"]) * 90 + months * 50) // (months * 100)
+        cap_cents = monthly_equivalent_cents
+        plans.append({
+            **row,
+            "monthly_overage_cap_usd_cents": cap_cents,
+            "monthly_overage_cap_usd": f"{cap_cents / 100:.2f}",
+        })
+    return {"plans": plans, "overage_rate_usd": "0.005", "consent_version": BILLING_CONSENT_VERSION}
+
+
+@router.post("/v1/enterprise/consent", summary="Record explicit enterprise plan and overage consent")
+async def record_enterprise_consent(body: EnterpriseConsent, request: Request):
+    if not (body.accept_plan_price and body.accept_overage_rate and body.accept_spending_cap):
+        raise HTTPException(status_code=400, detail="All billing acknowledgements are required.")
+    user = await _authenticated_customer(request)
+    url, headers = _admin_headers()
+
+    account_response = await _service_request(
+        "GET", url, headers, "usage_accounts",
+        params={"select": "id", "user_id": f"eq.{user['id']}", "is_active": "eq.true", "limit": "2"},
+    )
+    accounts = account_response.json()
+    if len(accounts) != 1:
+        raise HTTPException(status_code=409, detail="Your login must have exactly one active usage account. Contact Veracust support.")
+    account_id = accounts[0]["id"]
+
+    plan_response = await _service_request(
+        "GET", url, headers, "enterprise_plan_catalog",
+        params={"select": "plan_code,display_name,term_months,price_usd_cents,included_calls,standard_bonus_calls,overage_price_usd_micros", "plan_code": f"eq.{body.plan_code}", "active": "eq.true", "limit": "1"},
+    )
+    plans = plan_response.json()
+    if len(plans) != 1:
+        raise HTTPException(status_code=400, detail="The selected enterprise plan is not available.")
+    plan = plans[0]
+
+    months = int(plan["term_months"])
+    price_cents = int(plan["price_usd_cents"])
+    monthly_equivalent_cents = (price_cents * 90 + months * 50) // (months * 100)
+    cap_cents = monthly_equivalent_cents
+    accepted_at = datetime.now(timezone.utc).isoformat()
+    subscription_payload = {
+        "account_id": account_id,
+        "user_id": user["id"],
+        "plan_code": plan["plan_code"],
+        "status": "pending_payment",
+        "currency": "USD",
+        "subscription_price_usd_cents": price_cents,
+        "included_calls": int(plan["included_calls"]),
+        "bonus_calls": int(plan["standard_bonus_calls"]),
+        "overage_price_usd_micros": int(plan["overage_price_usd_micros"]),
+        "overage_cap_usd_micros": cap_cents * 10000,
+        "billing_consent_version": BILLING_CONSENT_VERSION,
+        "billing_consent_at": accepted_at,
+        "overage_rate_accepted_at": accepted_at,
+        "spending_cap_accepted_at": accepted_at,
+        "updated_at": accepted_at,
+    }
+
+    pending_response = await _service_request(
+        "GET", url, headers, "enterprise_subscriptions",
+        params={"select": "id,billing_consent_at", "account_id": f"eq.{account_id}", "user_id": f"eq.{user['id']}", "plan_code": f"eq.{plan['plan_code']}", "status": "eq.pending_payment", "order": "created_at.desc", "limit": "2"},
+    )
+    pending = pending_response.json()
+    if len(pending) > 1:
+        raise HTTPException(status_code=409, detail="Multiple pending subscriptions exist for this plan. Contact Veracust support before proceeding.")
+    if pending and pending[0].get("billing_consent_at") is None:
+        saved = await _service_request(
+            "PATCH", url, {**headers, "Prefer": "return=representation"}, "enterprise_subscriptions",
+            params={"id": f"eq.{pending[0]['id']}", "status": "eq.pending_payment"},
+            json={k: v for k, v in subscription_payload.items() if k not in {"account_id", "user_id", "plan_code", "status"}},
+        )
+    elif pending:
+        return {
+            "subscription_id": pending[0]["id"],
+            "status": "pending_payment",
+            "consent_already_recorded": True,
+            "plan": plan["display_name"],
+            "monthly_overage_cap_usd": f"{cap_cents / 100:.2f}",
+            "message": "Billing consent was already recorded. Payment and activation are not enabled.",
+        }
+    else:
+        saved = await _service_request(
+            "POST", url, {**headers, "Prefer": "return=representation"}, "enterprise_subscriptions",
+            json=subscription_payload,
+        )
+    rows = saved.json() if saved.content else []
+    subscription_id = rows[0]["id"] if rows else (pending[0]["id"] if pending else None)
+    return {
+        "subscription_id": subscription_id,
+        "status": "pending_payment",
+        "consent_recorded": True,
+        "plan": plan["display_name"],
+        "monthly_overage_cap_usd": f"{cap_cents / 100:.2f}",
+        "overage_rate_usd": "0.005",
+        "message": "Consent recorded. No payment was collected and the subscription remains inactive.",
+    }
 
 
 @router.post("/v1/admin/deployments", summary="Provision a customer deployment credential")
