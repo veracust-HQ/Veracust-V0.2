@@ -76,6 +76,7 @@ jobs:
                   value = max(-1.0, min(1.0, signal))
                   frames.extend(struct.pack("<h", int(value * 32767)))
               audio.writeframes(frames)
+          PY
 
       - name: Start container with production-like restrictions
         run: |
@@ -105,7 +106,7 @@ jobs:
 
       - name: Analyze synthetic audio inside Docker
         run: |
-          docker exec veracust-smoke python voice_guard.py /app/test-audio/veracust-smoke.wav > /tmp/veracust-result.json
+          docker exec veracust-smoke sh -c 'mkdir -p /tmp/numba-cache && NUMBA_CACHE_DIR=/tmp/numba-cache python voice_guard.py /app/test-audio/veracust-smoke.wav' > /tmp/veracust-result.json
           python - <<'PY'
           import json
           from pathlib import Path
