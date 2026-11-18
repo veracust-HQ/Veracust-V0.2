@@ -36,7 +36,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          images: ghcr.io/veracust-hq/veracust-v0.2
           tags: |
             type=ref,event=tag
             type=sha,format=long
