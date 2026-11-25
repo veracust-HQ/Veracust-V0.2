@@ -1,62 +1,64 @@
 <div align="center">
 
 # Veracust
-### Enterprise voice authenticity analysis
+### Voice authenticity analysis for a world of synthetic media
 
-**Assess whether an audio sample may contain synthetic or manipulated speech.**
+**A developing audio-analysis platform exploring signals that may help identify AI-generated or manipulated speech.**
 
-[![Docker release](https://img.shields.io/badge/container-GHCR-blue)](https://github.com/veracust-HQ/Veracust-V0.2/pkgs/container/veracust-v0.2)
+[Website](https://veracust-website.onrender.com) · [Product Hunt](https://www.producthunt.com/posts/veracust/embed) · [API docs](https://veracust-v0-2.onrender.com/docs) · [GitHub](https://github.com/veracust-HQ/Veracust-V0.2)
+
 [![Release](https://img.shields.io/github/v/release/veracust-HQ/Veracust-V0.2)](https://github.com/veracust-HQ/Veracust-V0.2/releases)
-[![License](https://img.shields.io/badge/license-proprietary-lightgrey)]()
-
-[Website](https://veracust-website.onrender.com) · [API documentation](https://veracust-v0-2.onrender.com/docs) · [Releases](https://github.com/veracust-HQ/Veracust-V0.2/releases)
+[![Container](https://img.shields.io/badge/Container-GHCR-2496ED?logo=docker&logoColor=white)](https://github.com/veracust-HQ/Veracust-V0.2/pkgs/container/veracust-v0.2)
+[![License](https://img.shields.io/badge/License-Proprietary-lightgrey)](#license)
 
 </div>
 
 ---
 
-## Overview
+## The challenge
 
-Veracust is developing an audio authenticity analysis platform for organizations that need to assess the risk of AI-generated or manipulated speech in voice-based workflows.
+AI voice generation is making convincing synthetic speech easier to create and distribute. That creates new risks for organisations that rely on voice interactions, including impersonation, social engineering and trust-and-safety review.
 
-The platform combines physics-informed signal analysis, computational audio examination, and an API workflow to help organizations assess audio authenticity across voice-based workflows.
+Veracust is being built to help investigate this challenge through audio signal analysis and a practical software workflow.
 
-**Current stage:** Veracust is an early-stage product. The hosted evaluation service and versioned Docker packaging are available for controlled testing. Enterprise production deployments, independent performance validation, formal security assessments, and service-level commitments must be agreed and verified before operational use.
+## What we're building
 
-## Who it is for
+Veracust combines computational audio analysis with an API-oriented application architecture. The codebase includes signal-processing stages intended to examine measurable characteristics of an audio recording that may be relevant to synthetic or manipulated speech.
 
-Potential use cases include:
+The goal is to provide an additional analytical signal for human review and broader verification workflows—not to replace identity checks, fraud controls or human judgement.
 
-- Financial services and contact centres assessing voice-based fraud risk.
-- Trust and safety teams reviewing potentially synthetic audio.
-- Enterprises evaluating voice authenticity controls for internal workflows.
-- Security teams integrating audio analysis into a broader verification process.
+## Potential applications
 
-These are target use cases, not claims of validated deployment at named customers.
+- **Financial services:** add an audio-analysis signal to voice-based fraud review.
+- **Contact centres:** support investigation of suspicious or unusual voice interactions.
+- **Trust and safety:** help review potentially synthetic audio submitted to a platform.
+- **Security teams:** explore audio authenticity as one layer in a wider verification process.
 
-## How it works
+These are intended use cases, not claims of validated customer deployments.
 
-At a high level, an audio sample is processed by the Veracust analysis service. The current codebase includes signal-processing and audio-analysis stages intended to extract indicators relevant to synthetic or manipulated speech. Results should be treated as an analytical signal and interpreted in the context of the recording channel, audio quality, and the organization's own risk policy.
+## Product and technical direction
 
+The current engineering direction includes:
 
-## Technology and research direction
+- Digital signal processing and computational audio features.
+- Analysis of speech and recording characteristics.
+- An API workflow for submitting audio for evaluation.
+- Container packaging for controlled, customer-managed testing.
+- Continued evaluation across recording conditions, codecs and audio quality.
 
-Veracust's approach draws on the physics of sound and the measurable digital characteristics of audio signals. The analysis examines signal-level patterns and computational features that may help distinguish naturally produced speech from synthetic or manipulated audio.
+The specific methods and outputs may change as the product is researched and developed.
 
-Our engineering roadmap is focused on progressively strengthening this foundation through continued research, improved analytical methods, broader evaluation, and more capable future releases. As the platform evolves, Veracust aims to deliver increasingly robust versions while validating each release through systematic testing.
+## Try the current evaluation API
 
-## Deployment options
+- **API base:** https://veracust-v0-2.onrender.com
+- **Interactive API documentation:** https://veracust-v0-2.onrender.com/docs
+- **Website:** https://veracust-website.onrender.com
 
-### Hosted evaluation
+Hosted services may be unavailable during maintenance or when the hosting account has exhausted its included runtime allowance. The API surface may evolve; validate integrations against the current version before use.
 
-The hosted API is available for evaluation and integration testing:
+Do not submit confidential, regulated or production customer recordings unless you have the necessary authorisation and have completed your own security and data-protection review. Use synthetic or otherwise authorised test audio during evaluation.
 
-- API: https://veracust-v0-2.onrender.com
-- Interactive API documentation: https://veracust-v0-2.onrender.com/docs
-
-Do not submit confidential, regulated, or production customer recordings unless you have completed an appropriate data-protection and security review and have authorization to do so.
-
-### Customer-controlled Docker deployment
+## Run with Docker
 
 A versioned container image is published through GitHub Container Registry:
 
@@ -64,95 +66,78 @@ A versioned container image is published through GitHub Container Registry:
 docker pull ghcr.io/veracust-hq/veracust-v0.2:v0.1.0
 ```
 
-The current release workflow builds for `linux/amd64`. See [Deployment Guide](DEPLOYMENT.md) for configuration and operating instructions.
+The current published release targets `linux/amd64`. Review [DEPLOYMENT.md](DEPLOYMENT.md) for deployment configuration and operating guidance before running the image.
 
-**Important deployment notes:**
+The current enterprise control workflow requires outbound HTTPS connectivity to the Veracust control plane for inspection authorisation and usage finalisation. The current design is not air-gapped and does not provide offline usage queuing.
 
-- The enterprise control workflow currently requires outbound HTTPS connectivity to the Veracust control plane for inspection authorization and usage finalization.
-- The current design is not air-gapped and does not provide offline usage queuing.
-- If the control plane cannot authorize or finalize an inspection, the enterprise workflow is designed to fail closed.
-- Audio processing is performed by the customer-side service in the intended customer-controlled deployment model. Control-plane messages are designed for usage authorization and accounting; review the implementation and deployment configuration before relying on any data-handling assumption.
-- Customers remain responsible for their host security, access controls, logs, temporary storage, backups, snapshots, swap, monitoring, and network egress policies.
+## Development and evaluation
 
-A successful container build or synthetic test is not, by itself, evidence of production readiness.
+The repository includes the application, Docker packaging, deployment configuration examples and CI workflows.
 
-## Security and privacy approach
+Useful project files:
 
-Veracust is designed to support customer-controlled processing for enterprise deployments. The intended architecture keeps audio analysis on the customer-controlled runtime and uses the central control plane for deployment authorization and usage accounting.
+| File | Purpose |
+| --- | --- |
+| `Dockerfile` | Container build definition |
+| `docker-compose.yml` | Local Compose configuration |
+| `.env.example` | Configuration template |
+| `DEPLOYMENT.md` | Deployment and operating guidance |
+| `.github/workflows/` | Automated build and release workflows |
 
-Before deployment, customers should validate:
+For local evaluation:
 
-1. What data is processed, stored, logged, and transmitted by their chosen configuration.
-2. Host-level controls for temporary files, logs, backups, snapshots, and swap.
-3. Network egress and TLS configuration.
-4. Authentication, deployment-token handling, and secret rotation.
-5. Retention, deletion, incident response, and access policies.
+1. Install Docker Engine or Docker Desktop with Linux container support.
+2. Review `.env.example` and create a local `.env` file with the required values.
+3. Follow [DEPLOYMENT.md](DEPLOYMENT.md).
+4. Use synthetic or otherwise authorised test audio.
+5. Validate the image, host environment, network behaviour, logging and failure modes before any operational use.
 
+Never commit `.env` files, access tokens, customer audio or other secrets to source control.
 
-Veracust does not claim a compliance certification or guarantee that every recording can be classified correctly. Security and privacy requirements should be assessed with the Veracust team before handling sensitive workloads.
+## Security, privacy and responsible use
 
-## API
+Veracust is an early-stage product. Before using it with sensitive workloads, assess what the selected configuration processes, stores, logs and transmits. Review host security, access controls, temporary files, backups, network egress, secret handling, retention and deletion practices.
 
-The deployed API's OpenAPI specification and interactive endpoint documentation are available at:
+Veracust does not currently claim a compliance certification, formal service-level agreement, independent penetration-test attestation or guaranteed classification accuracy.
 
-https://veracust-v0-2.onrender.com/docs
+Audio authenticity analysis is probabilistic in practice: recording devices, codecs, compression, background noise, language, speaker variation and new synthesis methods can affect results. Outputs should be treated as decision-support signals and independently evaluated on representative data before being used in consequential decisions.
 
-The API surface may evolve while the product is in active development. Integrators should pin versions and validate behavior in a non-production environment before rollout.
+## Roadmap
 
-## Enterprise plans and usage
+Our development priorities include:
 
-Enterprise plans are being developed around subscription allowances and usage-based overage accounting. The current backend includes plan and usage-accounting components, but payment processing and automated collection are not yet live.
+- Broader and more representative evaluation.
+- Continued research into acoustic and signal-level indicators.
+- Improved reliability across real-world recording conditions.
+- Clearer integration and deployment workflows.
+- Stronger documentation for security, privacy and operational review.
 
-Commercial terms, activation, deployment credentials, and any applicable usage limits must be confirmed in a written agreement before a customer is activated. Do not treat example or test database records as an active subscription.
+Roadmap items are areas of work, not delivery commitments.
 
-## Development and testing
+## Connect with Veracust
 
-The repository contains the application, Docker packaging, deployment configuration examples, and CI workflows.
+Follow the project and stay up to date:
 
-Useful files:
+- [Product Hunt — Veracust](https://www.producthunt.com/posts/veracust/embed)
+- [X](https://x.com/Veracust_HQ)
+- [Facebook](https://www.facebook.com/profile.php?id=61596658978153)
+- [Instagram](https://www.instagram.com/veracust_official/)
 
-- `Dockerfile` — container build definition.
-- `docker-compose.yml` — local Compose configuration.
-- `.env.example` — configuration template; replace placeholders with authorized values.
-- `DEPLOYMENT.md` — deployment and operating guidance.
-- `.github/workflows/` — automated build and release workflows.
-
-For local testing:
-
-1. Install Docker Engine or Docker Desktop with the required Linux container support.
-2. Review `.env.example` and create a local `.env` file with the required deployment configuration.
-3. Follow the steps in [DEPLOYMENT.md](DEPLOYMENT.md).
-4. Use synthetic or otherwise authorized test audio.
-5. Validate the exact image, host environment, network behavior, logging, and failure modes before any customer rollout.
-
-Never commit `.env`, access tokens, customer audio, or other secrets to source control.
-
-## Current limitations
-
-- The product is under active development and is not represented as independently validated for every codec, language, recording environment, or attack type.
-- Detection performance, false-positive rates, and false-negative rates must be measured on representative customer data before operational decisions are based on the system.
-- The enterprise control plane currently requires outbound HTTPS; offline and air-gapped operation are not supported.
-- The current published container release targets `linux/amd64`.
-- Payment processing, automated invoicing, and live subscription collection are not yet implemented.
-- No formal SLA, penetration-test attestation, or compliance certification is claimed in this repository.
+For product, evaluation or commercial enquiries, visit the [Veracust website](https://veracust-website.onrender.com).
 
 ## Founder
 
-**Utkarsh Dixit** — Founder, Veracust
+**Utkarsh Dixit** — Founder, Veracust.
 
-## Support and commercial enquiries
+## License
 
-For product information, evaluation discussions, or enterprise deployment planning, use the contact channel published on the [Veracust website](https://veracust-website.onrender.com).
-
-## Repository
-
-This repository contains proprietary Veracust software. No rights to use, copy, modify, distribute, or deploy the software are granted except as expressly agreed in writing by Veracust.
+This repository contains proprietary Veracust software. No rights to use, copy, modify, distribute or deploy the software are granted except as expressly agreed in writing by Veracust.
 
 ---
 
 <div align="center">
 
 **Veracust**  
-*Voice authenticity analysis for enterprise workflows.*
+*Exploring a more trustworthy future for voice.*
 
 </div>
