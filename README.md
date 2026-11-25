@@ -11,6 +11,11 @@
 [![Container](https://img.shields.io/badge/Container-GHCR-2496ED?logo=docker&logoColor=white)](https://github.com/veracust-HQ/Veracust-V0.2/pkgs/container/veracust-v0.2)
 [![License](https://img.shields.io/badge/License-Proprietary-lightgrey)](#license)
 
+[![Product Hunt](https://img.shields.io/badge/Product_Hunt-Visit_Veracust-DA552F?style=for-the-badge&logo=producthunt&logoColor=white)](https://www.producthunt.com/posts/veracust/embed)
+[![Follow on X](https://img.shields.io/badge/Follow_on_X-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/Veracust_HQ)
+[![Follow on Facebook](https://img.shields.io/badge/Follow_on_Facebook-0866FF?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/profile.php?id=61596658978153)
+[![Follow on Instagram](https://img.shields.io/badge/Follow_on_Instagram-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/veracust_official/)
+
 </div>
 
 ---
