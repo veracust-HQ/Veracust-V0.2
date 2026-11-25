@@ -100,11 +100,31 @@ curl -X POST https://veracust-v0-2.onrender.com/v1/admin/deployments \
 
 The response contains a random deployment token exactly once. Deliver it securely to the customer and store it as `VERACUST_DEPLOYMENT_TOKEN`. Supabase stores only its SHA-256 hash. If the token is lost or compromised, revoke that deployment and issue a replacement.
 
-## 5. Customer plan selection and billing consent
+## 5. Veracust business payout onboarding (India / INR)
+
+The recommended payment provider for Veracust's India-based INR collections is **Razorpay**, subject to merchant onboarding, KYC, business eligibility and provider approval. Razorpay advertises support for Indian payment methods including UPI, cards and net banking, and describes settlement for eligible international collections; exact availability depends on the approved merchant account and product configuration ([Razorpay India payments](https://razorpay.com/accept-international-payments-from-india/)).
+
+### Where to enter the bank details
+
+1. Use the owner-only **Business payout setup** panel in the hosted Veracust dashboard.
+2. Select **Start Razorpay onboarding** and complete merchant/business verification directly with Razorpay.
+3. Add the business settlement bank account in Razorpay's secure onboarding/dashboard flow.
+4. Wait for Razorpay to approve the merchant account and confirm the settlement configuration.
+5. Keep the Razorpay merchant account identifiers and API credentials in Veracust's hosted API secret manager only when the payment integration is implemented.
+
+Veracust intentionally does not collect or store the bank account number, IFSC, UPI PIN, net-banking password, card PIN or OTP. Do not send these details in chat, commit them to GitHub, put them in Docker customer environment files, or enter them into the public evaluation dashboard.
+
+### Integration status
+
+The owner panel is an onboarding handoff only. **Razorpay checkout, payment creation, signature verification, webhook processing, refunds, reconciliation and automatic subscription activation are not yet implemented.** Do not accept customer payments or mark subscriptions active based on screenshots or manual claims. Those flows must be implemented and tested end-to-end before going live.
+
+When the payment integration is ready, configure provider credentials as encrypted environment secrets on the Veracust hosted API service. Never expose the Razorpay key secret or webhook secret to frontend JavaScript or customer containers.
+
+## 6. Customer plan selection and billing consent
 
 The authenticated workspace exposes enterprise plan selection and explicit billing consent. The API verifies the signed-in Supabase user, resolves exactly one active usage account, reads the active plan catalog, calculates a monthly overage cap equal to 90% of the plan's monthly-equivalent price (rounded to the nearest cent), and records acceptance of the plan price, $0.005 overage rate, and spending cap. Consent creates or updates a `pending_payment` subscription only; it does not activate service or collect payment. Card collection and payment processing are not implemented.
 
-## 6. Billing behavior
+## 7. Billing behavior
 
 - One successfully completed local analysis counts as one call.
 - Failed decoding/analysis attempts release their reservation and do not count.
@@ -115,13 +135,13 @@ The authenticated workspace exposes enterprise plan selection and explicit billi
 - At the cap, new inspections are blocked.
 - The plan allowance and bonus are subscription-term totals; the overage spending cap is tracked by calendar-month segment within the subscription term.
 
-## 7. Current implementation boundaries
+## 8. Current implementation boundaries
 
 This change provides deployment-token provisioning, central authorization, reservation/finalization, and local analysis integration. It does **not** yet implement card collection/payment processing, payment-provider webhooks, subscription purchase/renewal automation, invoice settlement, notification delivery, an enterprise dashboard, or automated recovery of reservations left pending after a process or network crash. Those are required before commercial launch.
 
 The admin endpoint requires an active subscription row already created by a trusted billing administrator. Never activate subscriptions based solely on a browser request or customer-supplied payment claim.
 
-## 8. Operational security checklist
+## 9. Operational security checklist
 
 - Keep customer deployment tokens in a secret manager; rotate/revoke compromised tokens.
 - Keep service-role and admin keys only in Veracust's hosted secret manager.

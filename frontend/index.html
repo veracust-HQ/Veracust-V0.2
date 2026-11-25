@@ -65,6 +65,20 @@ a{color:var(--cyan)}.wrap{max-width:1160px;margin:auto;padding:24px 20px 60px}.t
     <p class="sub" style="margin:12px 0 0">No card is collected and no payment is charged by this step. Your subscription remains pending payment; deployment access is not activated.</p>
   </section>
 
+
+  <section class="panel hidden" id="ownerPayoutPanel" style="margin-bottom:18px">
+    <div class="eyebrow">Owner settings · payments</div>
+    <h2 style="margin-top:6px">Business payout setup</h2>
+    <p class="sub">Veracust business country: India · Settlement currency: INR · Recommended provider: Razorpay</p>
+    <div class="notice warn"><strong>Merchant onboarding required.</strong> Razorpay is not connected yet. Create and verify your merchant account, then add your business settlement bank account directly in Razorpay's secure onboarding/dashboard.</div>
+    <div class="notice">For safety, Veracust does not ask for or store your bank account number, IFSC, UPI PIN, net-banking password, card PIN or OTP in this dashboard. Razorpay handles merchant KYC and settlement-bank details. Keep payment-provider API secrets in the hosted API's secret environment only—not in GitHub, browser code, or customer Docker .env files.</div>
+    <div class="actions">
+      <a class="btn" href="https://razorpay.com/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-block">Start Razorpay onboarding ↗</a>
+      <a class="btn secondary" href="https://dashboard.razorpay.com/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;display:inline-block">Open Razorpay Dashboard ↗</a>
+    </div>
+    <p class="sub" style="margin:14px 0 0">Status: Not connected · No customer payments are currently being collected through Razorpay. Payment checkout, verified webhooks and automated subscription activation must be implemented and tested before accepting live payments.</p>
+  </section>
+
   <div class="top" style="margin:18px 0"><div><div class="eyebrow">Authenticated evaluation session</div><strong id="welcome">Welcome</strong><div id="accountEmail" class="email"></div></div><span id="sessionStatus" class="status">Signed in</span></div>
   <div class="grid">
     <section class="panel"><h2>New inspection</h2><p class="sub">Upload an authorized, non-sensitive audio sample.</p>
@@ -108,6 +122,8 @@ async function updateView(){
     show("policyGate",false);
     show("appPanel",true);
     try { await loadEnterprisePlans(); } catch (billingError) { setMessage("enterpriseConsentMessage","Enterprise plans could not be loaded: "+billingError.message,"error"); }
+    try { await loadOwnerPayoutPanel(); } catch (payoutError) { console.warn("Owner payout panel could not be loaded:", payoutError); }
+
     try {
       await refreshStats();
     } catch (statsError) {
@@ -154,6 +170,12 @@ $("healthText").textContent="Secure account access";
 supabase.auth.onAuthStateChange((_event,newSession)=>{session=newSession;setTimeout(updateView,0);});
 (async()=>{const {data}=await supabase.auth.getSession();session=data.session;await updateView();})();
 
+async function loadOwnerPayoutPanel(){
+  show("ownerPayoutPanel",false);
+  const {data,error}=await supabase.from("profiles").select("role").eq("user_id",session.user.id).maybeSingle();
+  if(error)throw error;
+  if(data?.role==="admin")show("ownerPayoutPanel",true);
+}
 async function loadEnterprisePlans(){
   const response=await fetch(API_BASE+"/v1/enterprise/plans",{headers:{Authorization:"Bearer "+session.access_token}});
   const data=await response.json();if(!response.ok)throw new Error(data.detail||"Could not load enterprise plans.");
